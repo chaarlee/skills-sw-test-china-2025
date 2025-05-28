@@ -87,6 +87,7 @@ Below is a list of available endpoints for the Poker API. Each endpoint includes
 Response
 ```json
 {
+  "message": "Login successful",
   "token": {
     "username": "admin",
     "hash": "MjAyNS0wNi0wM1QxMzowMDowMFo=",
@@ -101,11 +102,14 @@ Response
 ```
 These errors occur when calling a protected endpoint without a valid token.
 
-### 👤 Player Management (CRUD)
-
-> 🔒 All endpoints below require authentication via `Authorization: Bearer <token>` header
+**Valid users**
+- `user1`: `123456`
+- `user2`: `qwerty`
+- `user3`: `asdfgh`
 
 ---
+
+### 👤 Player Management (CRUD)
 
 #### `GET /api/players`
 
@@ -318,7 +322,7 @@ Evaluates a single Texas Hold’em hand based on exactly 2 private cards and 5 c
 }
 ```
 
-**Error Responses:**
+**Error Responses (400):**
 
 Missing or invalid number of cards:
 
@@ -364,7 +368,7 @@ The evaluation follows official Omaha rules:
 }
 ```
 
-**Error Responses:**
+**Error Responses (400):**
 
 Missing or invalid number of cards:
 
@@ -377,6 +381,10 @@ Missing or invalid number of cards:
 - hand must contain 4 valid cards (8 characters total)
 - board must contain 5 valid cards (10 characters total)
 - Duplicate cards across hand and board will be rejected (even if technically possible)
+
+**Poker Hands**
+
+![poker-hands](poker-hands.jpg)
 
 ---
 
