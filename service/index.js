@@ -76,6 +76,56 @@ const evalTexas = (hand, board) => {
   }
 };
 
+const evalOmaha = (hand, board) => {
+  try {
+    const handCombinations = [
+      [0, 1],
+      [0, 2],
+      [0, 3],
+      [1, 2],
+      [1, 3],
+      [2, 3],
+    ];
+    const boardCombinations = [
+      [0, 1, 2],
+      [0, 1, 3],
+      [0, 1, 4],
+      [0, 2, 3],
+      [0, 2, 4],
+      [0, 3, 4],
+      [1, 2, 3],
+      [1, 2, 4],
+      [1, 3, 4],
+      [2, 3, 4],
+    ];
+    const evalHands = [];
+    for (const handCombo of handCombinations) {
+      for (const boardCombo of boardCombinations) {
+        const cards = [
+          hand[handCombo[0]],
+          hand[handCombo[1]],
+          board[boardCombo[0]],
+          board[boardCombo[1]],
+          board[boardCombo[2]],
+        ];
+        const evalHand = PokerEvaluator.evalHand(cards);
+        evalHands.push(evalHand);
+      }
+    }
+    const evalHand = evalHands.sort((a, b) => {
+      return b.value - a.value;
+    })[0];
+    if (evalHand.handType === 9 && evalHand.handRank === 10) {
+      evalHand.handName = "royal flush";
+    }
+    return evalHand.handName;
+  } catch (error) {
+    console.error("Error evaluating hand:", error);
+    coverage.addCoverage("evaluate.omaha.error");
+    return null;
+  }
+};
+
 // Routes
 app.get("/api/players", (req, res) => {
   const players = db.players.sort((a, b) =>
@@ -261,11 +311,41 @@ app.get("/api/evaluate/texas", (req, res) => {
     return res.status(500).send("Invalid Texas input");
   }
   coverage.addCoverage("evaluate.texas.success");
-  res.json(evalHand);
+  res.json({ handRank: evalHand });
 });
 app.get("/api/evaluate/omaha", (req, res) => {
-  // Placeholder for Omaha Hold'em evaluation logic
-  res.json({ message: "Omaha Hold'em evaluation not implemented yet." });
+  const { hand, board } = req.query;
+  if (!hand || !board) {
+    coverage.addCoverage("evaluate.omaha.missing-params");
+    return res.status(400).send("Invalid Omaha input");
+  }
+  if (hand.length !== 8) {
+    coverage.addCoverage("evaluate.omaha.invalid-hand-length");
+    return res.status(400).send("Invalid Omaha input");
+  }
+  if (board.length !== 10) {
+    coverage.addCoverage("evaluate.omaha.invalid-board-length");
+    return res.status(400).send("Invalid Omaha input");
+  }
+
+  const handCards = getCardsFromString(hand);
+  if (handCards.length !== 4) {
+    coverage.addCoverage("evaluate.omaha.invalid-hand-cards");
+    return res.status(400).send("Invalid Omaha input");
+  }
+  const boardCards = getCardsFromString(board);
+  if (boardCards.length !== 5) {
+    coverage.addCoverage("evaluate.omaha.invalid-board-cards");
+    return res.status(400).send("Invalid Omaha input");
+  }
+
+  const evalHand = evalOmaha(handCards, boardCards);
+  if (!evalHand) {
+    coverage.addCoverage("evaluate.omaha.error");
+    return res.status(500).send("Invalid Omaha input");
+  }
+  coverage.addCoverage("evaluate.omaha.success");
+  res.json({ handRank: evalHand });
 });
 
 // Authentication route (placeholder)

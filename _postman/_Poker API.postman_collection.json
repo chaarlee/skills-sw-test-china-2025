@@ -131,7 +131,13 @@
 			"name": "DELETE player",
 			"request": {
 				"method": "DELETE",
-				"header": [],
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n    \"id\": \"example\",\n    \"username\": \"Chaar-Lee\",\n    \"email\": \"csaba@szirjak.com\",\n    \"birthDate\": \"1983-02-24\",\n    \"balance\": 9999.99,\n    \"country\": \"HU\"\n}",
@@ -174,7 +180,7 @@
 			"response": []
 		},
 		{
-			"name": "GET stats Copy",
+			"name": "GET evaluate texas",
 			"request": {
 				"method": "GET",
 				"header": [],
@@ -196,6 +202,35 @@
 						{
 							"key": "board",
 							"value": "QsJsTs9s3d"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET evaluate omaha",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/evaluate/omaha?hand=AsKs2cQs&board=2dJsTs9s3d",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"evaluate",
+						"omaha"
+					],
+					"query": [
+						{
+							"key": "hand",
+							"value": "AsKs2cQs"
+						},
+						{
+							"key": "board",
+							"value": "2dJsTs9s3d"
 						}
 					]
 				}

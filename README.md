@@ -317,8 +317,7 @@ Evaluates a single Texas Hold’em hand based on exactly 2 private cards and 5 c
 **Response (200):**
 ```json
 {
-  "handRank": "Royal Flush",
-  "bestHand": ["Ah", "Kh", "Qh", "Jh", "Th"]
+  "handRank": "royal flush"
 }
 ```
 
@@ -363,8 +362,7 @@ The evaluation follows official Omaha rules:
 **Response (200):**
 ```json
 {
-  "handRank": "Straight Flush",
-  "bestHand": ["Qd", "Jd", "Th", "9h", "8h"]
+  "handRank": "straight flush"
 }
 ```
 
