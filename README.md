@@ -14,6 +14,15 @@
       - [`GET /api/players`](#get-apiplayers)
       - [`GET /api/players/:id`](#get-apiplayersid)
       - [`POST /api/players`](#post-apiplayers)
+      - [`DELETE /api/players/:id`](#delete-apiplayersid)
+    - [📊 Player Statistics by Country](#-player-statistics-by-country)
+      - [`GET /api/stats`](#get-apistats)
+    - [🃏 Poker Hand Evaluation](#-poker-hand-evaluation)
+      - [`GET /api/evaluate/texas`](#get-apievaluatetexas)
+      - [`GET /api/evaluate/omaha`](#get-apievaluateomaha)
+    - [🧪 Submitting and Validating Tests with Postman \& Newman](#-submitting-and-validating-tests-with-postman--newman)
+      - [✅ Goals](#-goals)
+      - [🛠️ Setup Instructions](#️-setup-instructions)
 
 
 ## 🧪 Introduction
@@ -42,9 +51,8 @@ The system under test is a simplified backend for a **poker management and hand 
 
 This API can be used to:
 - Manage a list of poker players using standard **CRUD operations**
-- Evaluate a single player’s best hand based on their private cards and the community board
-- Compare two players’ hands and determine the winner
 - Retrieve basic statistics, such as the number of players per country
+- Evaluate a single player’s best hand based on their private cards and the community board
 - Validate complex game rules, including edge cases involving hand structure and card usage rules (especially in Omaha)
 
 ### 🔐 Authentication Requirements
@@ -101,12 +109,11 @@ These errors occur when calling a protected endpoint without a valid token.
 
 #### `GET /api/players`
 
-**Description:** Lists all players, with optional filtering, sorting, and pagination.  
-**Authentication:** ✅ Required
+**Description:** Lists all players, with optional filtering, and pagination. Default sorted by name ASC.  
+**Authentication:** ❌ Not required
 
 **Query Parameters (optional):**
 - `country=HU`
-- `sort=balance_desc`
 - `page=1`
 - `limit=10`
 
@@ -129,15 +136,8 @@ These errors occur when calling a protected endpoint without a valid token.
 
 #### `GET /api/players/:id`
 
-**Description:**  
-Retrieves a single player by their unique ID.
-
-**Authentication:** ✅ Required  
-You must include the header:
-
-```http
-Authorization: Bearer <token>
-```
+**Description:**  Retrieves a single player by their unique ID.
+**Authentication:** ❌ Not required
 
 **Path Parameters:**
 - `:id` – The unique UUID of the player to fetch
@@ -159,6 +159,7 @@ Authorization: Bearer <token>
 { "error": "Not found" }
 ```
 
+
 #### `POST /api/players`
 
 **Description:**  
@@ -170,7 +171,6 @@ Include the header:
 ```http
 Authorization: Bearer <token>
 ```
-
 
 **Request Body (JSON):**
 ```json
@@ -218,3 +218,190 @@ Returned when the input is invalid. Possible error messages:
 { "error": "Invalid country code" }
 ```
 ↳ The country field is not exactly 2 letters.
+
+
+#### `DELETE /api/players/:id`
+
+**Description:**  
+Deletes a player from the system by their unique ID.
+
+**Authentication:** ✅ Required  
+Include the header:
+
+```http
+Authorization: Bearer <token>
+```
+
+**Path Parameters:**
+- `:id` – The unique UUID of the player to delete
+
+**Response (204):**  
+No content. The player was successfully deleted.
+
+**Error Response (404):**
+```json
+{ "error": "Not found" }
+```
+
+Note:
+Once deleted, the player cannot be recovered. Make sure to use this endpoint carefully during tests.
+
+---
+
+### 📊 Player Statistics by Country
+
+This endpoint provides a summary view of how many players are registered from each country.  
+It is useful for verifying the effects of data manipulation (e.g., creation and deletion of players) and does not require authentication.
+
+
+#### `GET /api/stats`
+
+**Description:**  
+Returns the number of registered players grouped by their country code (based on the `country` field of each player).
+
+**Authentication:** ❌ Not required  
+This endpoint is public and does **not require a token**.
+
+**Request Example:**
+
+`GET /api/stats`
+
+**Response (200):**
+```json
+{
+  "HU": 3,
+  "US": 5,
+  "DE": 1,
+  "CN": 2
+}
+```
+
+**Notes:**
+
+- Country codes must follow the ISO 3166-1 alpha-2 standard (e.g., "HU", "US", "CN")
+- The response is always a JSON object where:
+- keys = country codes (strings)
+- values = number of players from that country (integers)
+
+---
+
+### 🃏 Poker Hand Evaluation
+
+This section of the API allows you to evaluate poker hands using standard rules for **Texas Hold’em** and **Omaha**. These endpoints return the best possible 5-card hand that can be formed using the player's hand and the board cards.
+
+The evaluation logic simulates the **showdown phase** of a poker game, where the winner is determined based on hand rankings (e.g., Flush, Full House, Straight, etc.).
+
+These endpoints are **read-only** and do **not require authentication**, making them ideal for public testing, simulation, and rule validation.
+
+---
+
+#### `GET /api/evaluate/texas`
+
+**Description:**  
+Evaluates a single Texas Hold’em hand based on exactly 2 private cards and 5 community cards.
+
+**Authentication:** ❌ Not required
+
+**Query Parameters:**
+- `hand` – A string of 4 characters representing 2 private cards (e.g., `AhKh`)
+- `board` – A string of 10 characters representing 5 board cards (e.g., `QhJhTh2c3d`)
+
+**Request Example:**
+
+`GET /api/evaluate/texas?hand=AhKh&board=QhJhTh2c3d`
+
+**Response (200):**
+```json
+{
+  "handRank": "Royal Flush",
+  "bestHand": ["Ah", "Kh", "Qh", "Jh", "Th"]
+}
+```
+
+**Error Responses:**
+
+Missing or invalid number of cards:
+
+```json
+{ "error": "Invalid Texas input" }
+```
+
+**Validation Rules:**
+
+- hand must contain 2 valid cards (4 characters total)
+- board must contain 5 valid cards (10 characters total)
+- Duplicate cards across hand and board will be rejected (even if technically possible)
+
+**Note:**
+Card notation uses standard abbreviations:
+
+- Ranks: 2–9, T, J, Q, K, A
+- Suits: `h` = hearts, `d` = diamonds, `c` = clubs, `s` = spades
+- Example: `Ah` = Ace of Hearts, `Td` = Ten of Diamonds
+
+#### `GET /api/evaluate/omaha`
+
+**Description:**  
+Evaluates an Omaha poker hand based on 4 private cards and 5 community board cards.  
+The evaluation follows official Omaha rules:  
+✅ You must use **exactly 2 cards from your hand** and **exactly 3 cards from the board** to form the best 5-card hand.
+
+**Authentication:** ❌ Not required
+
+**Query Parameters:**
+- `hand` – A string of 8 characters representing 4 private cards (e.g., `AhKhQdJd`)
+- `board` – A string of 10 characters representing 5 board cards (e.g., `Th9h8h2c3d`)
+
+**Request Example:**
+
+`GET /api/evaluate/omaha?hand=AhKhQdJd&board=Th9h8h2c3d`
+
+**Response (200):**
+```json
+{
+  "handRank": "Straight Flush",
+  "bestHand": ["Qd", "Jd", "Th", "9h", "8h"]
+}
+```
+
+**Error Responses:**
+
+Missing or invalid number of cards:
+
+```json
+{ "error": "Invalid Omaha input" }
+```
+
+**Validation Rules:**
+
+- hand must contain 4 valid cards (8 characters total)
+- board must contain 5 valid cards (10 characters total)
+- Duplicate cards across hand and board will be rejected (even if technically possible)
+
+---
+
+### 🧪 Submitting and Validating Tests with Postman & Newman
+
+Participants are expected to create a fully automated test suite in **Postman**, covering all critical functionalities of the poker API.
+
+We will run your tests using **Newman**, Postman's CLI tool, and validate test coverage.
+
+#### ✅ Goals
+
+- Automate all required validations:
+  - CRUD operations
+  - Evaluators (Texas, Omaha, compare)
+  - Stats aggregation
+  - Authentication handling
+
+- Validate edge cases and failure responses
+- Submit a collection that can be executed offline via CLI
+
+#### 🛠️ Setup Instructions
+
+1. Import the collection into Postman and complete your tests
+2. Export the collection as `worldskills-tests.postman_collection.json`
+3. Run it via Newman:
+
+```bash
+newman run worldskills-tests.postman_collection.json --reporters cli,json
