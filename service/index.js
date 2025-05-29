@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const { v4: uuidv4, validate } = require("uuid");
+const fs = require("fs");
 const PokerEvaluator = require("poker-evaluator");
 const Coverage = require("./coverage");
 
@@ -12,6 +13,27 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const db = require("./db.json");
+
+// Coverage cases
+const content = fs.readFileSync("./index.js", "utf-8");
+const coverageCases =
+  content
+    .match(/coverage\.addCoverage\("([^"]+)"\);/g)
+    .map((c) => c.replace(/coverage\.addCoverage\("([^"]+)"\);/, "$1"))
+    .sort((a, b) => a.localeCompare(b)) || [];
+
+const difference = (a, b) => {
+  const _difference = new Set(a);
+  for (const elem of b) {
+    _difference.delete(elem);
+  }
+  return [..._difference];
+};
+
+const round = (value, precision = 2) => {
+  const factor = Math.pow(10, precision);
+  return Math.round(value * factor) / factor;
+};
 
 const validateToken = (token) => {
   try {
@@ -49,7 +71,6 @@ const validateAuthHeader = (authHeader) => {
   }
   const token = authHeader.split(" ")[1];
   if (!validateToken(token)) {
-    coverage.addCoverage("auth.invalid-token");
     return false;
   }
   return true;
@@ -71,7 +92,6 @@ const evalTexas = (hand, board) => {
     return evalHand.handName;
   } catch (error) {
     console.error("Error evaluating hand:", error);
-    coverage.addCoverage("evaluate.texas.error");
     return null;
   }
 };
@@ -383,9 +403,14 @@ app.post("/api/auth/login", (req, res) => {
 });
 
 app.get("/api/coverage", (req, res) => {
+  const c = coverage.getCoverage();
+  const diff = difference(coverageCases, c);
   res.json({
-    coverage: Array.from(coverage.getCoverage()).sort(),
-    value: "TODO %",
+    value: round((c.length / coverageCases.length) * 100, 2),
+    coverage: c,
+    totalCases: coverageCases.size,
+    missingCases: diff,
+    coverageCases: coverageCases,
   });
 });
 

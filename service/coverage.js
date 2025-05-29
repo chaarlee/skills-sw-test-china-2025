@@ -8,7 +8,9 @@ class Coverage {
   }
 
   getCoverage() {
-    return this.coverage;
+    return [...this.coverage].sort((a, b) => {
+      a.localeCompare(b);
+    });
   }
 }
 
