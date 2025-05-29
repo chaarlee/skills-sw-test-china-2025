@@ -82,14 +82,64 @@ const getCardsFromString = (cardsString) => {
   return cards;
 };
 
+const handMap = {
+  "one pair": "pair",
+  "two pairs": "two pair",
+};
+
 const evalTexas = (hand, board) => {
   try {
     const cards = [...hand, ...board];
     const evalHand = PokerEvaluator.evalHand(cards);
+    const evalBoard = PokerEvaluator.evalHand(board);
+    const eval1Card = PokerEvaluator.evalHand([hand[0], ...board]);
+    const eval2Card = PokerEvaluator.evalHand([hand[1], ...board]);
+    if (evalHand.value === evalBoard.value) {
+      coverage.addCoverage("evaluate.texas.play-board");
+    } else if (
+      eval1Card.value === evalHand.value ||
+      eval2Card.value === evalHand.value
+    ) {
+      coverage.addCoverage("evaluate.texas.use-one-card");
+    } else {
+      coverage.addCoverage("evaluate.texas.use-both-cards");
+    }
     if (evalHand.handType === 9 && evalHand.handRank === 10) {
       evalHand.handName = "royal flush";
     }
-    return evalHand.handName;
+    let name = evalHand.handName.toLowerCase();
+    name = handMap[name] ?? name;
+    if (name === "high card") {
+      coverage.addCoverage("evaluate.texas.high-card");
+    }
+    if (name === "pair") {
+      coverage.addCoverage("evaluate.texas.pair");
+    }
+    if (name === "two pair") {
+      coverage.addCoverage("evaluate.texas.two-pair");
+    }
+    if (name === "three of a kind") {
+      coverage.addCoverage("evaluate.texas.three-of-a-kind");
+    }
+    if (name === "straight") {
+      coverage.addCoverage("evaluate.texas.straight");
+    }
+    if (name === "flush") {
+      coverage.addCoverage("evaluate.texas.flush");
+    }
+    if (name === "full house") {
+      coverage.addCoverage("evaluate.texas.full-house");
+    }
+    if (name === "four of a kind") {
+      coverage.addCoverage("evaluate.texas.four-of-a-kind");
+    }
+    if (name === "straight flush") {
+      coverage.addCoverage("evaluate.texas.straight-flush");
+    }
+    if (name === "royal flush") {
+      coverage.addCoverage("evaluate.texas.royal-flush");
+    }
+    return name;
   } catch (error) {
     console.error("Error evaluating hand:", error);
     return null;
@@ -118,6 +168,7 @@ const evalOmaha = (hand, board) => {
       [1, 3, 4],
       [2, 3, 4],
     ];
+    const evalAllCards = PokerEvaluator.evalHand([...hand, ...board]);
     const evalHands = [];
     for (const handCombo of handCombinations) {
       for (const boardCombo of boardCombinations) {
@@ -138,10 +189,46 @@ const evalOmaha = (hand, board) => {
     if (evalHand.handType === 9 && evalHand.handRank === 10) {
       evalHand.handName = "royal flush";
     }
-    return evalHand.handName;
+
+    if (evalAllCards.value > evalHand.value) {
+      coverage.addCoverage("evaluate.omaha.higher-board");
+    }
+
+    let name = evalHand.handName.toLowerCase();
+    name = handMap[name] ?? name;
+    if (name === "high card") {
+      coverage.addCoverage("evaluate.omaha.high-card");
+    }
+    if (name === "pair") {
+      coverage.addCoverage("evaluate.omaha.pair");
+    }
+    if (name === "two pair") {
+      coverage.addCoverage("evaluate.omaha.two-pair");
+    }
+    if (name === "three of a kind") {
+      coverage.addCoverage("evaluate.omaha.three-of-a-kind");
+    }
+    if (name === "straight") {
+      coverage.addCoverage("evaluate.omaha.straight");
+    }
+    if (name === "flush") {
+      coverage.addCoverage("evaluate.omaha.flush");
+    }
+    if (name === "full house") {
+      coverage.addCoverage("evaluate.omaha.full-house");
+    }
+    if (name === "four of a kind") {
+      coverage.addCoverage("evaluate.omaha.four-of-a-kind");
+    }
+    if (name === "straight flush") {
+      coverage.addCoverage("evaluate.omaha.straight-flush");
+    }
+    if (name === "royal flush") {
+      coverage.addCoverage("evaluate.omaha.royal-flush");
+    }
+    return name;
   } catch (error) {
     console.error("Error evaluating hand:", error);
-    coverage.addCoverage("evaluate.omaha.error");
     return null;
   }
 };
@@ -184,13 +271,13 @@ app.get("/api/players", (req, res) => {
     return res.status(404).send("No more players available");
   }
   if (limit < 1 || page < 1) {
-    coverage.addCoverage("players.get.invalid-limit-or-page");
+    coverage.addCoverage("players.get.negative-limit-or-page");
     return res.status(400).send("Invalid limit or page number");
   }
 
   const ret = players.slice(start, end);
   if (ret.length === 0) {
-    coverage.addCoverage("players.get.no-players-for-page");
+    coverage.addCoverage("players.get.no-players");
     return res.status(404).send("No players found for this page");
   }
 
@@ -404,13 +491,36 @@ app.post("/api/auth/login", (req, res) => {
 
 app.get("/api/coverage", (req, res) => {
   const c = coverage.getCoverage();
+  const cEvaluate = coverageCases.filter((e) => e.startsWith("evaluate."));
+  const cCRUD = coverageCases.filter((e) => !e.startsWith("evaluate."));
   const diff = difference(coverageCases, c);
+  const diffEvaluate = difference(cEvaluate, c);
+  const diffCRUD = difference(cCRUD, c);
   res.json({
-    value: round((c.length / coverageCases.length) * 100, 2),
-    coverage: c,
-    totalCases: coverageCases.size,
-    missingCases: diff,
-    coverageCases: coverageCases,
+    value: {
+      total: round((c.length / coverageCases.length) * 100, 2),
+      crud: round(((cCRUD.length - diffCRUD.length) / cCRUD.length) * 100, 2),
+      evaluate: round(
+        ((cEvaluate.length - diffEvaluate.length) / cEvaluate.length) * 100,
+        2
+      ),
+    },
+    coveredCases: {
+      total: coverageCases.length,
+      crud: cCRUD.length,
+      evaluate: cEvaluate.length,
+    },
+    covered: c,
+    missing: {
+      crud: diffCRUD,
+      evaluate: diffEvaluate,
+      total: diff,
+    },
+    testCases: {
+      crud: cCRUD,
+      evaluate: cEvaluate,
+      total: coverageCases,
+    },
   });
 });
 
