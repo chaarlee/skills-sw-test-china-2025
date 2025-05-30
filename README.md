@@ -8,6 +8,8 @@
   - [♠️ Domain Description](#️-domain-description)
     - [🔐 Authentication Requirements](#-authentication-requirements)
   - [🛠️ API Endpoints](#️-api-endpoints)
+    - [🧹 Reset Database](#-reset-database)
+      - [`GET /api/reset`](#get-apireset)
     - [🔐 Authentication](#-authentication)
       - [`POST /api/auth/login`](#post-apiauthlogin)
     - [👤 Player Management (CRUD)](#-player-management-crud)
@@ -20,9 +22,9 @@
     - [🃏 Poker Hand Evaluation](#-poker-hand-evaluation)
       - [`GET /api/evaluate/texas`](#get-apievaluatetexas)
       - [`GET /api/evaluate/omaha`](#get-apievaluateomaha)
-    - [🧪 Submitting and Validating Tests with Postman \& Newman](#-submitting-and-validating-tests-with-postman--newman)
-      - [✅ Goals](#-goals)
-      - [🛠️ Setup Instructions](#️-setup-instructions)
+  - [🧪 Submitting and Validating Tests with Postman \& Newman](#-submitting-and-validating-tests-with-postman--newman)
+    - [✅ Goals](#-goals)
+    - [🛠️ Setup Instructions](#️-setup-instructions)
 
 
 ## 🧪 Introduction
@@ -68,6 +70,15 @@ Authorization: Bearer <token>
 ## 🛠️ API Endpoints
 
 Below is a list of available endpoints for the Poker API. Each endpoint includes method, path, purpose, authentication requirements, and input/output structure.
+
+### 🧹 Reset Database
+
+#### `GET /api/reset`
+
+**Description:** Reset the database to the original state.   
+**Authentication:** ❌ Not required
+
+---
 
 ### 🔐 Authentication
 
@@ -399,13 +410,13 @@ Missing or invalid number of cards:
 
 ---
 
-### 🧪 Submitting and Validating Tests with Postman & Newman
+## 🧪 Submitting and Validating Tests with Postman & Newman
 
 Participants are expected to create a fully automated test suite in **Postman**, covering all critical functionalities of the poker API.
 
 We will run your tests using **Newman**, Postman's CLI tool, and validate test coverage.
 
-#### ✅ Goals
+### ✅ Goals
 
 - Automate all required validations:
   - CRUD operations
@@ -416,7 +427,7 @@ We will run your tests using **Newman**, Postman's CLI tool, and validate test c
 - Validate edge cases and failure responses
 - Submit a collection that can be executed offline via CLI
 
-#### 🛠️ Setup Instructions
+### 🛠️ Setup Instructions
 
 1. Import the collection into Postman and complete your tests
 2. Export the collection as `worldskills-tests.postman_collection.json`
