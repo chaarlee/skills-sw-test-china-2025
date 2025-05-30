@@ -1,0 +1,17 @@
+name: competitor-${COMPETITOR_NUMBER}
+
+services:
+  competitor:
+    container_name: competitor-${COMPETITOR_NUMBER}
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+    image: competitor-${COMPETITOR_NUMBER}
+    ports:
+      - "8080:2345"
+#    labels:
+#      - "traefik.http.routers.${COMPETITOR_NAME}-cbs.rule=HostRegexp(`^cbs\\.${DOMAIN_NAME}`) && ClientIP(`${COMPETITOR_IP}`)"
+#      - "traefik.http.routers.${COMPETITOR_NAME}-cbs.priority=10"
+#
+#      - "traefik.http.routers.${COMPETITOR_NAME}-cbs-global.rule=HostRegexp(`^cbs\\.${COMPETITOR_NAME}\\.${DOMAIN_NAME}`) && !ClientIP(`192.168.88.0/25`)"
+#      - "traefik.http.routers.${COMPETITOR_NAME}-cbs-global.priority=10"

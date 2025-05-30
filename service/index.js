@@ -50,12 +50,12 @@ const round = (value, precision = 2) => {
 const validateToken = (token) => {
   try {
     const decodedToken = JSON.parse(token);
-    // console.log(
-    //   "Decoded token:",
-    //   decodedToken,
-    //   decodedToken.hash,
-    //   btoa(decodedToken.validAt)
-    // );
+    console.log(
+      "Decoded token:",
+      decodedToken,
+      decodedToken.hash,
+      btoa(decodedToken.validAt)
+    );
     if (decodedToken.hash !== btoa(decodedToken.validAt)) {
       coverage.addCoverage("auth.manipulated-token");
       return false;
@@ -119,6 +119,11 @@ const evalTexas = (hand, board) => {
     if (evalHand.handType === 9 && evalHand.handRank === 10) {
       evalHand.handName = "royal flush";
     }
+
+    if (!evalHand.handName) {
+      evalHand.handName = 'invalid hand';
+    }
+
     let name = evalHand.handName.toLowerCase();
     name = handMap[name] ?? name;
     if (name === "high card") {
@@ -180,7 +185,8 @@ const evalOmaha = (hand, board) => {
       [1, 3, 4],
       [2, 3, 4],
     ];
-    const evalAllCards = PokerEvaluator.evalHand([...hand, ...board]);
+
+    //const evalAllCards = PokerEvaluator.evalHand([...hand, ...board]);
     const evalHands = [];
     for (const handCombo of handCombinations) {
       for (const boardCombo of boardCombinations) {
@@ -191,6 +197,7 @@ const evalOmaha = (hand, board) => {
           board[boardCombo[1]],
           board[boardCombo[2]],
         ];
+
         const evalHand = PokerEvaluator.evalHand(cards);
         evalHands.push(evalHand);
       }
@@ -202,8 +209,12 @@ const evalOmaha = (hand, board) => {
       evalHand.handName = "royal flush";
     }
 
-    if (evalAllCards.value > evalHand.value) {
-      coverage.addCoverage("evaluate.omaha.higher-board");
+    // if (evalAllCards.value > evalHand.value) {
+    //   coverage.addCoverage("evaluate.omaha.higher-board");
+    // }
+
+    if (!evalHand.handName) {
+      evalHand.handName = 'invalid hand';
     }
 
     let name = evalHand.handName.toLowerCase();
@@ -267,12 +278,16 @@ app.get("/api/players", (req, res) => {
   }
   if (isNaN(limit) || isNaN(page)) {
     coverage.addCoverage("players.get.invalid-limit-or-page");
-    return res.status(400).send("Invalid limit or page number");
+    return res.status(400).send({ error: "Invalid limit or page number"});
+  }
+  if (limit < 1 || page < 1) {
+    coverage.addCoverage("players.get.negative-limit-or-page");
+    return res.status(400).send({ error: "Invalid limit or page number" });
   }
   if (page > 1) {
     coverage.addCoverage("players.get.page-greater-than-1");
   }
-  if (limit != players.length) {
+  if (limit !== players.length) {
     coverage.addCoverage("players.get.limit-not-equal-to-total");
   }
 
@@ -286,21 +301,17 @@ app.get("/api/players", (req, res) => {
 
   if (start >= players.length) {
     coverage.addCoverage("players.get.no-players-for-page");
-    return res.status(404).send("No players found for this page");
+    return res.status(404).send({ error: "No players found for this page" });
   }
   if (page > Math.ceil(players.length / limit)) {
     coverage.addCoverage("players.get.no-more-players");
-    return res.status(404).send("No more players available");
-  }
-  if (limit < 1 || page < 1) {
-    coverage.addCoverage("players.get.negative-limit-or-page");
-    return res.status(400).send("Invalid limit or page number");
+    return res.status(404).send({ error: "No more players available" });
   }
 
   const ret = players.slice(start, end);
   if (ret.length === 0) {
     coverage.addCoverage("players.get.no-players");
-    return res.status(404).send("No players found for this page");
+    return res.status(404).send({ error: "No players found for this page" });
   }
 
   // Return paginated players
@@ -314,7 +325,7 @@ app.get("/api/players/:id", (req, res) => {
     res.json(player);
   } else {
     coverage.addCoverage("players.get.by-id.not-found");
-    res.status(404).send("Player not found");
+    res.status(404).send({ error: "Player not found" });
   }
 });
 
@@ -323,7 +334,7 @@ app.post("/api/players", (req, res) => {
   const authHeader = req.headers.authorization;
   if (!validateAuthHeader(authHeader)) {
     coverage.addCoverage("players.post.auth.invalid-token");
-    return res.status(401).send("Invalid token");
+    return res.status(401).send({ error: "Invalid token" });
   }
 
   const np = {
@@ -340,11 +351,11 @@ app.post("/api/players", (req, res) => {
   // - `country`: must be a **2-letter ISO country code** (e.g., `"HU"`)
   if (!np.username) {
     coverage.addCoverage("players.post.validation.username");
-    return res.status(400).send("Invalid username");
+    return res.status(400).send({ error: "Invalid username" });
   }
   if (!np.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(np.email)) {
     coverage.addCoverage("players.post.validation.email");
-    return res.status(400).send("Invalid email format");
+    return res.status(400).send({ error: "Invalid email format" });
   }
   if (
     !np.birthDate ||
@@ -354,21 +365,21 @@ app.post("/api/players", (req, res) => {
     !new Date(np.birthDate)
   ) {
     coverage.addCoverage("players.post.validation.birthDate");
-    return res.status(400).send("Invalid birth date");
+    return res.status(400).send({ error: "Invalid birth date" });
   }
   const age =
     (new Date() - new Date(np.birthDate)) / (1000 * 60 * 60 * 24 * 365);
   if (age < 18) {
     coverage.addCoverage("players.post.validation.age");
-    return res.status(400).send("Underage");
+    return res.status(400).send({ error: "Underage" });
   }
-  if (typeof np.balance !== "number" || np.balance < 0) {
+  if (typeof np.balance !== "number" || np.balance < 1) {
     coverage.addCoverage("players.post.validation.balance");
-    return res.status(400).send("Balance must be greater than 0");
+    return res.status(400).send({ error: "Balance must be greater than 0" });
   }
   if (!np.country || !/^[A-Z]{2}$/.test(np.country)) {
     coverage.addCoverage("players.post.validation.country");
-    return res.status(400).send("Invalid country code");
+    return res.status(400).send({ error: "Invalid country code" });
   }
 
   db.players.push(np);
@@ -380,7 +391,7 @@ app.delete("/api/players/:id", (req, res) => {
   const authHeader = req.headers.authorization;
   if (!validateAuthHeader(authHeader)) {
     coverage.addCoverage("players.delete.auth.invalid-token");
-    return res.status(401).send("Invalid token");
+    return res.status(401).send({ error: "Invalid token" });
   }
 
   const index = db.players.findIndex((p) => p.id === req.params.id);
@@ -390,7 +401,7 @@ app.delete("/api/players/:id", (req, res) => {
     res.status(204).send();
   } else {
     coverage.addCoverage("players.delete.by-id.not-found");
-    res.status(404).send("Player not found");
+    res.status(404).send({error: "Player not found"});
   }
 });
 
@@ -412,32 +423,32 @@ app.get("/api/evaluate/texas", (req, res) => {
   const { hand, board } = req.query;
   if (!hand || !board) {
     coverage.addCoverage("evaluate.texas.missing-params");
-    return res.status(400).send("Invalid Texas input");
+    return res.status(400).send({ error: "Invalid Texas input" });
   }
   if (hand.length !== 4) {
     coverage.addCoverage("evaluate.texas.invalid-hand-length");
-    return res.status(400).send("Invalid Texas input");
+    return res.status(400).send({ error: "Invalid Texas input" });
   }
   if (board.length !== 10) {
     coverage.addCoverage("evaluate.texas.invalid-board-length");
-    return res.status(400).send("Invalid Texas input");
+    return res.status(400).send({ error: "Invalid Texas input" });
   }
 
   const handCards = getCardsFromString(hand);
   if (handCards.length !== 2) {
     coverage.addCoverage("evaluate.texas.invalid-hand-cards");
-    return res.status(400).send("Invalid Texas input");
+    return res.status(400).send({ error: "Invalid Texas input" });
   }
   const boardCards = getCardsFromString(board);
   if (boardCards.length !== 5) {
     coverage.addCoverage("evaluate.texas.invalid-board-cards");
-    return res.status(400).send("Invalid Texas input");
+    return res.status(400).send({ error: "Invalid Texas input" });
   }
 
   const evalHand = evalTexas(handCards, boardCards);
-  if (!evalHand) {
+  if (!evalHand || evalHand === 'invalid hand') {
     coverage.addCoverage("evaluate.texas.error");
-    return res.status(500).send("Invalid Texas input");
+    return res.status(500).send({ error: "Invalid Texas input" });
   }
   coverage.addCoverage("evaluate.texas.success");
   res.json({ handRank: evalHand });
@@ -446,32 +457,32 @@ app.get("/api/evaluate/omaha", (req, res) => {
   const { hand, board } = req.query;
   if (!hand || !board) {
     coverage.addCoverage("evaluate.omaha.missing-params");
-    return res.status(400).send("Invalid Omaha input");
+    return res.status(400).send({error: "Invalid Omaha input"});
   }
   if (hand.length !== 8) {
     coverage.addCoverage("evaluate.omaha.invalid-hand-length");
-    return res.status(400).send("Invalid Omaha input");
+    return res.status(400).send({error: "Invalid Omaha input"});
   }
   if (board.length !== 10) {
     coverage.addCoverage("evaluate.omaha.invalid-board-length");
-    return res.status(400).send("Invalid Omaha input");
+    return res.status(400).send({error: "Invalid Omaha input"});
   }
 
   const handCards = getCardsFromString(hand);
   if (handCards.length !== 4) {
     coverage.addCoverage("evaluate.omaha.invalid-hand-cards");
-    return res.status(400).send("Invalid Omaha input");
+    return res.status(400).send({error: "Invalid Omaha input"});
   }
   const boardCards = getCardsFromString(board);
   if (boardCards.length !== 5) {
     coverage.addCoverage("evaluate.omaha.invalid-board-cards");
-    return res.status(400).send("Invalid Omaha input");
+    return res.status(400).send({error: "Invalid Omaha input"});
   }
 
   const evalHand = evalOmaha(handCards, boardCards);
-  if (!evalHand) {
+  if (!evalHand || evalHand === 'invalid hand') {
     coverage.addCoverage("evaluate.omaha.error");
-    return res.status(500).send("Invalid Omaha input");
+    return res.status(500).send({error: "Invalid Omaha input"});
   }
   coverage.addCoverage("evaluate.omaha.success");
   res.json({ handRank: evalHand });
@@ -488,20 +499,20 @@ app.post("/api/auth/login", (req, res) => {
 
   if (!username || !password) {
     coverage.addCoverage("auth.login.missing-credentials");
-    return res.status(400).send("Username and password are required");
+    return res.status(400).send({ "error": "Username and password are required" });
   }
   if (!users[username]) {
     coverage.addCoverage("auth.login.unauthorized");
-    return res.status(401).send("Unauthorized");
+    return res.status(401).send({ "error": "Unauthorized" });
   }
   if (users[username] !== password) {
     coverage.addCoverage("auth.login.invalid-password");
-    return res.status(401).send("Unauthorized");
+    return res.status(401).send({ "error": "Unauthorized" });
   }
   coverage.addCoverage("auth.login.success");
 
   const validAt =
-    new Date(Date.now() + 1000 * 60).toISOString().slice(0, 19) + "Z"; // valid for 1 mins
+    new Date(Date.now() + 1000 * 120).toISOString().slice(0, 19) + "Z"; // valid for 2 mins
   const token = {
     username: username,
     hash: btoa(validAt),
