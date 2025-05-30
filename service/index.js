@@ -12,7 +12,20 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const db = require("./db.json");
+const initialDb = require("./db.json");
+
+let db = {};
+// Reset the database to the initial state
+const reset = () => {
+  console.log("Initial DB", initialDb.players.length);
+  db = JSON.parse(JSON.stringify(initialDb)); // Deep copy to reset the db
+  console.log(
+    "Database reset to initial state",
+    db.players.length,
+    "players loaded"
+  );
+};
+reset();
 
 // Coverage cases
 const content = fs.readFileSync("./index.js", "utf-8");
@@ -522,6 +535,11 @@ app.get("/api/coverage", (req, res) => {
       total: coverageCases,
     },
   });
+});
+
+app.get("/api/reset", (req, res) => {
+  reset();
+  res.status(200).send("Database reset successfully");
 });
 
 // Start the server
