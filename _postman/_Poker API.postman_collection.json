@@ -81,14 +81,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{baseUrl}}/api/players/f4b12649-0316-46ff-a52f-b87e9d933230",
+					"raw": "{{baseUrl}}/api/players/abc0aa78-3bf7-46f5-9b4e-e3677f324b3f",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"api",
 						"players",
-						"f4b12649-0316-46ff-a52f-b87e9d933230"
+						"abc0aa78-3bf7-46f5-9b4e-e3677f324b3f"
 					]
 				}
 			},
@@ -250,6 +250,24 @@
 					"path": [
 						"api",
 						"coverage"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET reset",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/reset",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"reset"
 					]
 				}
 			},
