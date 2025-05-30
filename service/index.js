@@ -121,7 +121,7 @@ const evalTexas = (hand, board) => {
     }
 
     if (!evalHand.handName) {
-      evalHand.handName = 'invalid hand';
+      evalHand.handName = "invalid hand";
     }
 
     let name = evalHand.handName.toLowerCase();
@@ -214,7 +214,7 @@ const evalOmaha = (hand, board) => {
     // }
 
     if (!evalHand.handName) {
-      evalHand.handName = 'invalid hand';
+      evalHand.handName = "invalid hand";
     }
 
     let name = evalHand.handName.toLowerCase();
@@ -278,7 +278,7 @@ app.get("/api/players", (req, res) => {
   }
   if (isNaN(limit) || isNaN(page)) {
     coverage.addCoverage("players.get.invalid-limit-or-page");
-    return res.status(400).send({ error: "Invalid limit or page number"});
+    return res.status(400).send({ error: "Invalid limit or page number" });
   }
   if (limit < 1 || page < 1) {
     coverage.addCoverage("players.get.negative-limit-or-page");
@@ -401,7 +401,7 @@ app.delete("/api/players/:id", (req, res) => {
     res.status(204).send();
   } else {
     coverage.addCoverage("players.delete.by-id.not-found");
-    res.status(404).send({error: "Player not found"});
+    res.status(404).send({ error: "Player not found" });
   }
 });
 
@@ -446,7 +446,7 @@ app.get("/api/evaluate/texas", (req, res) => {
   }
 
   const evalHand = evalTexas(handCards, boardCards);
-  if (!evalHand || evalHand === 'invalid hand') {
+  if (!evalHand || evalHand === "invalid hand") {
     coverage.addCoverage("evaluate.texas.error");
     return res.status(500).send({ error: "Invalid Texas input" });
   }
@@ -457,32 +457,32 @@ app.get("/api/evaluate/omaha", (req, res) => {
   const { hand, board } = req.query;
   if (!hand || !board) {
     coverage.addCoverage("evaluate.omaha.missing-params");
-    return res.status(400).send({error: "Invalid Omaha input"});
+    return res.status(400).send({ error: "Invalid Omaha input" });
   }
   if (hand.length !== 8) {
     coverage.addCoverage("evaluate.omaha.invalid-hand-length");
-    return res.status(400).send({error: "Invalid Omaha input"});
+    return res.status(400).send({ error: "Invalid Omaha input" });
   }
   if (board.length !== 10) {
     coverage.addCoverage("evaluate.omaha.invalid-board-length");
-    return res.status(400).send({error: "Invalid Omaha input"});
+    return res.status(400).send({ error: "Invalid Omaha input" });
   }
 
   const handCards = getCardsFromString(hand);
   if (handCards.length !== 4) {
     coverage.addCoverage("evaluate.omaha.invalid-hand-cards");
-    return res.status(400).send({error: "Invalid Omaha input"});
+    return res.status(400).send({ error: "Invalid Omaha input" });
   }
   const boardCards = getCardsFromString(board);
   if (boardCards.length !== 5) {
     coverage.addCoverage("evaluate.omaha.invalid-board-cards");
-    return res.status(400).send({error: "Invalid Omaha input"});
+    return res.status(400).send({ error: "Invalid Omaha input" });
   }
 
   const evalHand = evalOmaha(handCards, boardCards);
-  if (!evalHand || evalHand === 'invalid hand') {
+  if (!evalHand || evalHand === "invalid hand") {
     coverage.addCoverage("evaluate.omaha.error");
-    return res.status(500).send({error: "Invalid Omaha input"});
+    return res.status(500).send({ error: "Invalid Omaha input" });
   }
   coverage.addCoverage("evaluate.omaha.success");
   res.json({ handRank: evalHand });
@@ -499,15 +499,17 @@ app.post("/api/auth/login", (req, res) => {
 
   if (!username || !password) {
     coverage.addCoverage("auth.login.missing-credentials");
-    return res.status(400).send({ "error": "Username and password are required" });
+    return res
+      .status(400)
+      .send({ error: "Username and password are required" });
   }
   if (!users[username]) {
     coverage.addCoverage("auth.login.unauthorized");
-    return res.status(401).send({ "error": "Unauthorized" });
+    return res.status(401).send({ error: "Unauthorized" });
   }
   if (users[username] !== password) {
     coverage.addCoverage("auth.login.invalid-password");
-    return res.status(401).send({ "error": "Unauthorized" });
+    return res.status(401).send({ error: "Unauthorized" });
   }
   coverage.addCoverage("auth.login.success");
 
@@ -562,8 +564,15 @@ app.get("/api/reset", (req, res) => {
   res.status(200).send("Database reset successfully");
 });
 
+let port = 2345;
+
+const args = process.argv.slice(2);
+if (args[0]) {
+  port = parseInt(args[0], 10);
+}
+
 // Start the server
-const PORT = process.env.PORT || 2345;
+const PORT = process.env.PORT || port;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
