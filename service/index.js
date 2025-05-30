@@ -17,7 +17,6 @@ const initialDb = require("./db.json");
 let db = {};
 // Reset the database to the initial state
 const reset = () => {
-  console.log("Initial DB", initialDb.players.length);
   db = JSON.parse(JSON.stringify(initialDb)); // Deep copy to reset the db
   console.log(
     "Database reset to initial state",
@@ -248,14 +247,24 @@ const evalOmaha = (hand, board) => {
 
 // Routes
 app.get("/api/players", (req, res) => {
-  const players = db.players.sort((a, b) =>
-    a.username.localeCompare(b.username)
-  );
+  let players = db.players.sort((a, b) => a.username.localeCompare(b.username));
   coverage.addCoverage("players.get.all");
 
   // Pagination logic
   const limit = parseInt(req.query.limit) || players.length;
   const page = parseInt(req.query.page) || 1;
+  const country = req.query.country;
+  if (country) {
+    if (!/^[A-Z]{2}$/.test(country)) {
+      coverage.addCoverage("players.get.invalid-country-code");
+      return res.status(400).send("Invalid country code");
+    }
+    coverage.addCoverage("players.get.by-country");
+    players = players.filter(
+      (p) => p.country && p.country.toLowerCase() === country.toLowerCase()
+    );
+    console.log("Filtered players by country:", country, players.length);
+  }
   if (isNaN(limit) || isNaN(page)) {
     coverage.addCoverage("players.get.invalid-limit-or-page");
     return res.status(400).send("Invalid limit or page number");
@@ -279,7 +288,7 @@ app.get("/api/players", (req, res) => {
     coverage.addCoverage("players.get.no-players-for-page");
     return res.status(404).send("No players found for this page");
   }
-  if (end > players.length) {
+  if (page > Math.ceil(players.length / limit)) {
     coverage.addCoverage("players.get.no-more-players");
     return res.status(404).send("No more players available");
   }
