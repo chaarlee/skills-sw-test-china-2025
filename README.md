@@ -96,6 +96,11 @@ Response
 }
 ```
 
+**Error Response (400): Bad request**
+```json
+{ "error": "Username and password are required" }
+```
+
 **Error Response (401): Unauthorized**
 ```json
 { "error": "Unauthorized" }
@@ -138,6 +143,15 @@ These errors occur when calling a protected endpoint without a valid token.
 ]
 ```
 
+**Error Response (400): Bad request**
+```json
+{ "error": "{message}" }
+```
+**Error Response (404): Not found**
+```json
+{ "error": "{message}" }
+```
+
 #### `GET /api/players/:id`
 
 **Description:**  Retrieves a single player by their unique ID.
@@ -160,9 +174,8 @@ These errors occur when calling a protected endpoint without a valid token.
 
 **Response (404):**
 ```json
-{ "error": "Not found" }
+{ "error": "Player not found" }
 ```
-
 
 #### `POST /api/players`
 
