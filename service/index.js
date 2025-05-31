@@ -267,7 +267,7 @@ const _s = (str) => {
 
 const _n = (number) => {
   if (hasToFail) {
-    return n + 100;
+    return number + 100;
   }
   return number;
 };
@@ -294,8 +294,20 @@ app.get("/api/players", (req, res) => {
   coverage.addCoverage("players.get.all");
 
   // Pagination logic
-  const limit = parseInt(req.query.limit) || players.length;
-  const page = parseInt(req.query.page) || 1;
+  let limit = parseInt(req.query.limit);
+  if (!limit) {
+    limit = players.length;
+    coverage.addCoverage("players.get.no-parameter-limit");
+  } else {
+    coverage.addCoverage("players.get.parameter-limit");
+  }
+  let page = parseInt(req.query.page);
+  if (!page) {
+    page = 1;
+    coverage.addCoverage("players.get.no-parameter-page");
+  } else {
+    coverage.addCoverage("players.get.parameter-page");
+  }
   const country = req.query.country;
   if (country) {
     if (!/^[A-Z]{2}$/.test(country)) {
@@ -307,6 +319,8 @@ app.get("/api/players", (req, res) => {
       (p) => p.country && p.country.toLowerCase() === country.toLowerCase()
     );
     // console.log("Filtered players by country:", country, players.length);
+  } else {
+    coverage.addCoverage("players.get.without-filter");
   }
   if (isNaN(limit) || isNaN(page)) {
     coverage.addCoverage("players.get.invalid-limit-or-page");
@@ -570,6 +584,11 @@ app.post("/api/auth/login", (req, res) => {
 });
 
 app.get("/api/coverage", (req, res) => {
+  const pwd = req.query.pwd;
+  if (pwd !== "123") {
+    return res.status(404).json();
+  }
+
   const c = coverage.getCoverage();
   const cEvaluate = coverageCases.filter((e) => e.startsWith("evaluate."));
   const cCRUD = coverageCases.filter((e) => !e.startsWith("evaluate."));
