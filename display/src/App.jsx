@@ -36,11 +36,11 @@ function App() {
 
   return (
     <>
-      <div className="w-full h-screen bg-yellow flex flex-col gap-1 p-4">
+      <div className="w-full h-screen bg-yellow flex flex-col gap-4 p-4">
         {competitors.map((competitor) => (
           <div
             key={competitor.name}
-            className="flex justify-between gap-1 w-full h-full items-center"
+            className="flex justify-between gap-0.5 w-full h-full items-center"
           >
             <div className="flex gap-2 flex-col items-center w-40">
               <span
@@ -52,6 +52,7 @@ function App() {
             </div>
             {coverage[competitor.name]?.testCases.total.map((testCase) => (
               <div
+                title={testCase}
                 className={twMerge(
                   "flex gap-1 justify-between grow h-full",
                   coverage[competitor.name]?.covered.includes(testCase)

@@ -1,1148 +1,1092 @@
 {
-	"info": {
-		"_postman_id": "1f0e17b6-7b61-4888-a137-13fb0df29b35",
-		"name": "_Poker API",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "30174363"
-	},
-	"item": [
-		{
-			"name": "POST login",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"//let testCases = JSON.parse(pm.environment.get(\"testCases\"));",
-							"let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
-							"const response = pm.response.json();",
-							"",
-							"pm.test(\"Status code is \" + pm.variables.get(\"expectedStatus\"), function () {",
-							"    pm.response.to.have.status(pm.variables.get(\"expectedStatus\"));",
-							"});",
-							"",
-							"pm.test(\"Message is \" + pm.variables.get(\"expectedMessage\"), function () {",
-							"    pm.expect(pm.variables.get(\"expectedStatus\") === 200 ? response.message : response.error).to.eql(pm.variables.get(\"expectedMessage\"));",
-							"});",
-							"",
-							"pm.environment.set(\"token\", response.token);",
-							"",
-							"if (pm.variables.get(\"testCaseCount\") === ++index) {",
-							"    pm.variables.unset(\"testCaseIndex\");",
-							"    pm.variables.unset(\"testCaseCount\");",
-							"} else {",
-							"    pm.variables.set(\"testCaseIndex\", index);",
-							"    pm.execution.setNextRequest(pm.info.requestName);",
-							"}"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"const testCases = [",
-							"    {",
-							"        username: null,",
-							"        password: undefined,",
-							"        expectedStatus: 400,",
-							"        expectedMessage: \"Username and password are required\",",
-							"    },",
-							"    {",
-							"        username: \"user10\",",
-							"        password: \"password\",",
-							"        expectedStatus: 401,",
-							"        expectedMessage: \"Unauthorized\",",
-							"    },",
-							"    {",
-							"        username: \"user1\",",
-							"        password: \"jondoe\",",
-							"        expectedStatus: 401,",
-							"        expectedMessage: \"Unauthorized\",",
-							"    },",
-							"    {",
-							"        username: \"user1\",",
-							"        password: \"123456\",",
-							"        expectedStatus: 200,",
-							"        expectedMessage: \"Login successful\",",
-							"    }",
-							"];",
-							"",
-							"pm.variables.set(\"testCaseCount\", testCases.length);",
-							"",
-							"let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
-							"",
-							"if (index >= testCases.length) {",
-							"    console.log(\"All test cases done.\");",
-							"    pm.execution.setNextRequest(null);  // Stop running",
-							"} else {",
-							"    let currentCase = testCases[index];",
-							"",
-							"    Object.keys(currentCase).forEach(key => {",
-							"        pm.variables.set(key, currentCase[key]);",
-							"    });",
-							"}"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"username\": \"{{username}}\",\n    \"password\": \"{{password}}\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{baseUrl}}/api/auth/login",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"api",
-						"auth",
-						"login"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GET players",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"const testCases = [",
-							"    {",
-							"        limit: null,",
-							"        page: null,",
-							"        country: null,",
-							"        expectedStatus: 400,",
-							"        expectedMessage: undefined,",
-							"    },",
-							"    {",
-							"        limit: 5,",
-							"        page: 1,",
-							"        country: null,",
-							"        expectedStatus: 200,",
-							"        expectedMessage: undefined,",
-							"    },",
-							"    {",
-							"        limit: 5,",
-							"        page: 2,",
-							"        country: null,",
-							"        expectedStatus: 200,",
-							"        expectedMessage: undefined,",
-							"    },",
-							"    {",
-							"        limit: 0,",
-							"        page: -1,",
-							"        country: null,",
-							"        expectedStatus: 400,",
-							"        expectedMessage: undefined,",
-							"    },",
-							"    {",
-							"        limit: 5,",
-							"        page: 1,",
-							"        country: \"HU\",",
-							"        expectedStatus: 200,",
-							"        expectedMessage: undefined,",
-							"    },",
-							"    {",
-							"        limit: 5,",
-							"        page: 1,",
-							"        country: \"ASDASD\",",
-							"        expectedStatus: 404,",
-							"        expectedMessage: undefined,",
-							"    },",
-							"];",
-							"",
-							"pm.variables.set(\"testCaseCount\", testCases.length);",
-							"",
-							"let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
-							"",
-							"if (index >= testCases.length) {",
-							"    pm.execution.setNextRequest(null);  // Stop running",
-							"} else {",
-							"    let currentCase = testCases[index];",
-							"",
-							"    Object.keys(currentCase).forEach(key => {",
-							"        pm.variables.set(key, currentCase[key]);",
-							"    });",
-							"}"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"//let testCases = JSON.parse(pm.environment.get(\"testCases\"));",
-							"let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
-							"const response = pm.response.json();",
-							"",
-							"pm.test(\"Status code is \" + pm.variables.get(\"expectedStatus\"), function () {",
-							"    pm.response.to.have.status(pm.variables.get(\"expectedStatus\"));",
-							"});",
-							"",
-							"const expectedMessage = pm.variables.get(\"expectedMessage\");",
-							"",
-							"if (expectedMessage !== undefined) {",
-							"    pm.test(\"Message is \" + expectedMessage, function () {",
-							"    pm.expect(pm.variables.get(\"expectedStatus\") === 200 ? response.message : response.error).to.eql(expectedMessage);",
-							"});",
-							"}",
-							"",
-							"if (pm.variables.get(\"testCaseCount\") === ++index) {",
-							"    pm.variables.unset(\"testCaseIndex\");",
-							"    pm.variables.unset(\"testCaseCount\");",
-							"} else {",
-							"    pm.variables.set(\"testCaseIndex\", index);",
-							"    pm.execution.setNextRequest(pm.info.requestName);",
-							"}"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}/api/players?limit={{limit}}&page={{page}}&country={{country}}",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"api",
-						"players"
-					],
-					"query": [
-						{
-							"key": "limit",
-							"value": "{{limit}}"
-						},
-						{
-							"key": "page",
-							"value": "{{page}}"
-						},
-						{
-							"key": "country",
-							"value": "{{country}}"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GET player",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"const testCases = [",
-							"    {",
-							"        id: 1,",
-							"        expectedStatus: 404,",
-							"        expectedMessage: \"Player not found\",",
-							"    },",
-							"    {",
-							"        id: \"df77015a-4527-4650-913e-2fd4729f033a\",",
-							"        expectedStatus: 200,",
-							"        expectedMessage: undefined,",
-							"    }",
-							"];",
-							"",
-							"pm.variables.set(\"testCaseCount\", testCases.length);",
-							"",
-							"let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
-							"",
-							"if (index >= testCases.length) {",
-							"    pm.execution.setNextRequest(null);  // Stop running",
-							"} else {",
-							"    let currentCase = testCases[index];",
-							"",
-							"    Object.keys(currentCase).forEach(key => {",
-							"        pm.variables.set(key, currentCase[key]);",
-							"    });",
-							"}"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"//let testCases = JSON.parse(pm.environment.get(\"testCases\"));",
-							"let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
-							"const response = pm.response.json();",
-							"",
-							"pm.test(\"Status code is \" + pm.variables.get(\"expectedStatus\"), function () {",
-							"    pm.response.to.have.status(pm.variables.get(\"expectedStatus\"));",
-							"});",
-							"",
-							"const expectedMessage = pm.variables.get(\"expectedMessage\");",
-							"",
-							"if (expectedMessage !== undefined) {",
-							"    pm.test(\"Message is \" + expectedMessage, function () {",
-							"    pm.expect(pm.variables.get(\"expectedStatus\") === 200 ? response.message : response.error).to.eql(expectedMessage);",
-							"});",
-							"}",
-							"",
-							"if (pm.variables.get(\"testCaseCount\") === ++index) {",
-							"    pm.variables.unset(\"testCaseIndex\");",
-							"    pm.variables.unset(\"testCaseCount\");",
-							"} else {",
-							"    pm.variables.set(\"testCaseIndex\", index);",
-							"    pm.execution.setNextRequest(pm.info.requestName);",
-							"}"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}/api/players/{{id}}",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"api",
-						"players",
-						"{{id}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "POST player",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"const testCases = [",
-							"    {",
-							"        username: \"test\",",
-							"        email: \"johndoe@gmail.com\",",
-							"        birthDate: \"2000-01-01\",",
-							"        balance: 5000,",
-							"        country: \"HU\",",
-							"        tokenPrefix: \"What \",",
-							"        expectedStatus: 401,",
-							"        expectedMessage: undefined",
-							"    },",
-							"    {",
-							"        username: \"test\",",
-							"        email: \"johndoe@gmail.com\",",
-							"        birthDate: \"2000-01-01\",",
-							"        balance: 5000,",
-							"        country: \"HU\",",
-							"        tokenPrefix: \"Bearer {}\",",
-							"        expectedStatus: 401,",
-							"        expectedMessage: undefined",
-							"    },",
-							"    {",
-							"        username: \"\",",
-							"        email: \"johndoe@gmail.com\",",
-							"        birthDate: \"2000-01-01\",",
-							"        balance: 5000,",
-							"        country: \"HU\",",
-							"        tokenPrefix: \"Bearer \",",
-							"        expectedStatus: 400,",
-							"        expectedMessage: undefined",
-							"    },",
-							"    {",
-							"        username: \"test\",",
-							"        email: \"\",",
-							"        birthDate: \"2000-01-01\",",
-							"        balance: 5000,",
-							"        country: \"HU\",",
-							"        tokenPrefix: \"Bearer \",",
-							"        expectedStatus: 400,",
-							"        expectedMessage: undefined",
-							"    },",
-							"    {",
-							"        username: \"test\",",
-							"        email: \"johndoe@gmail.com\",",
-							"        birthDate: \"\",",
-							"        balance: 5000,",
-							"        country: \"HU\",",
-							"        tokenPrefix: \"Bearer \",",
-							"        expectedStatus: 400,",
-							"        expectedMessage: undefined",
-							"    },",
-							"    {",
-							"        username: \"test\",",
-							"        email: \"johndoe@gmail.com\",",
-							"        birthDate: \"2024-01-01\",",
-							"        balance: 5000,",
-							"        country: \"HU\",",
-							"        tokenPrefix: \"Bearer \",",
-							"        expectedStatus: 400,",
-							"        expectedMessage: undefined",
-							"    },",
-							"    {",
-							"        username: \"test\",",
-							"        email: \"johndoe@gmail.com\",",
-							"        birthDate: \"2024-01-01\",",
-							"        balance: 5000,",
-							"        country: \"HU\",",
-							"        tokenPrefix: \"Bearer \",",
-							"        expectedStatus: 400,",
-							"        expectedMessage: undefined",
-							"    },",
-							"    {",
-							"        username: \"test\",",
-							"        email: \"johndoe@gmail.com\",",
-							"        birthDate: \"2000-01-01\",",
-							"        balance: 0,",
-							"        country: \"HU\",",
-							"        tokenPrefix: \"Bearer \",",
-							"        expectedStatus: 400,",
-							"        expectedMessage: undefined",
-							"    },",
-							"    {",
-							"        username: \"test\",",
-							"        email: \"johndoe@gmail.com\",",
-							"        birthDate: \"2000-01-01\",",
-							"        balance: -50,",
-							"        country: \"HU\",",
-							"        tokenPrefix: \"Bearer \",",
-							"        expectedStatus: 400,",
-							"        expectedMessage: undefined",
-							"    },",
-							"    {",
-							"        username: \"test\",",
-							"        email: \"johndoe@gmail.com\",",
-							"        birthDate: \"2000-01-01\",",
-							"        balance: 5000,",
-							"        country: \"\",",
-							"        tokenPrefix: \"Bearer \",",
-							"        expectedStatus: 400,",
-							"        expectedMessage: undefined",
-							"    },",
-							"    {",
-							"        username: \"test\",",
-							"        email: \"johndoe@gmail.com\",",
-							"        birthDate: \"2000-01-01\",",
-							"        balance: 5000,",
-							"        country: \"ASDASD\",",
-							"        tokenPrefix: \"Bearer \",",
-							"        expectedStatus: 400,",
-							"        expectedMessage: undefined",
-							"    },",
-							"    {",
-							"        username: \"test\",",
-							"        email: \"johndoe@gmail.com\",",
-							"        birthDate: \"2000-01-01\",",
-							"        balance: 5000,",
-							"        country: \"HU\",",
-							"        tokenPrefix: \"Bearer \",",
-							"        expectedStatus: 201,",
-							"        expectedMessage: undefined",
-							"    }",
-							"];",
-							"",
-							"pm.variables.set(\"testCaseCount\", testCases.length);",
-							"",
-							"let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
-							"",
-							"if (index >= testCases.length) {",
-							"    pm.execution.setNextRequest(null);  // Stop running",
-							"} else {",
-							"    let currentCase = testCases[index];",
-							"",
-							"    currentCase.testToken = currentCase.tokenPrefix + pm.environment.get(\"token\");",
-							"",
-							"    Object.keys(currentCase).forEach(key => {",
-							"        pm.variables.set(key, currentCase[key]);",
-							"    });",
-							"}"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"//let testCases = JSON.parse(pm.environment.get(\"testCases\"));",
-							"let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
-							"const response = pm.response.json();",
-							"",
-							"pm.test(\"Status code is \" + pm.variables.get(\"expectedStatus\"), function () {",
-							"    pm.response.to.have.status(pm.variables.get(\"expectedStatus\"));",
-							"});",
-							"",
-							"const expectedMessage = pm.variables.get(\"expectedMessage\");",
-							"",
-							"if (expectedMessage !== undefined) {",
-							"    pm.test(\"Message is \" + expectedMessage, function () {",
-							"    pm.expect(pm.variables.get(\"expectedStatus\") === 200 ? response.message : response.error).to.eql(expectedMessage);",
-							"    });",
-							"}",
-							"",
-							"pm.environment.set(\"playerId\", response.id);",
-							"",
-							"if (pm.variables.get(\"testCaseCount\") === ++index) {",
-							"    pm.variables.unset(\"testCaseIndex\");",
-							"    pm.variables.unset(\"testCaseCount\");",
-							"} else {",
-							"    pm.variables.set(\"testCaseIndex\", index);",
-							"    pm.execution.setNextRequest(pm.info.requestName);",
-							"}"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "{{testToken}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"username\": \"{{username}}\",\n  \"email\": \"{{email}}\",\n  \"birthDate\": \"{{birthDate}}\",\n  \"balance\": {{balance}},\n  \"country\": \"{{country}}\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{baseUrl}}/api/players",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"api",
-						"players"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "DELETE player",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"const testCases = [",
-							"    {",
-							"        id: \"12345678-05b7-4d76-969c-c7336e247ca6\",",
-							"        tokenPrefix: \"What X\",",
-							"        expectedStatus: 401,",
-							"        expectedMessage: undefined",
-							"    },",
-							"    {",
-							"        id: \"12345678-05b7-4d76-969c-c7336e247ca6\",",
-							"        tokenPrefix: \"Bearer X\",",
-							"        expectedStatus: 401,",
-							"        expectedMessage: undefined",
-							"    },",
-							"    {",
-							"        tokenPrefix: \"Bearer \",",
-							"        expectedStatus: 204,",
-							"        expectedMessage: undefined",
-							"    },",
-							"    {",
-							"        id: \"12345678-05b7-4d76-969c-c7336e247ca6\",",
-							"        tokenPrefix: \"Bearer \",",
-							"        expectedStatus: 404,",
-							"        expectedMessage: undefined",
-							"    },",
-							"];",
-							"",
-							"pm.variables.set(\"testCaseCount\", testCases.length);",
-							"",
-							"let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
-							"",
-							"if (index >= testCases.length) {",
-							"    pm.execution.setNextRequest(null);  // Stop running",
-							"} else {",
-							"    let currentCase = testCases[index];",
-							"",
-							"    if (currentCase.id === undefined) {",
-							"        currentCase.id = pm.environment.get(\"playerId\");",
-							"    }",
-							"",
-							"    currentCase.testToken = currentCase.tokenPrefix + pm.environment.get(\"token\");",
-							"",
-							"    Object.keys(currentCase).forEach(key => {",
-							"        pm.variables.set(key, currentCase[key]);",
-							"    });",
-							"}"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"//let testCases = JSON.parse(pm.environment.get(\"testCases\"));",
-							"let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
-							"const response = pm.response.code === 204 ? null : pm.response.json();",
-							"",
-							"pm.test(\"Status code is \" + pm.variables.get(\"expectedStatus\"), function () {",
-							"    pm.response.to.have.status(pm.variables.get(\"expectedStatus\"));",
-							"});",
-							"",
-							"const expectedMessage = pm.variables.get(\"expectedMessage\");",
-							"",
-							"if (expectedMessage !== undefined) {",
-							"    pm.test(\"Message is \" + expectedMessage, function () {",
-							"    pm.expect(pm.variables.get(\"expectedStatus\") === 204 ? response.message : response.error).to.eql(expectedMessage);",
-							"    });",
-							"}",
-							"",
-							"if (pm.variables.get(\"testCaseCount\") === ++index) {",
-							"    pm.variables.unset(\"testCaseIndex\");",
-							"    pm.variables.unset(\"testCaseCount\");",
-							"} else {",
-							"    pm.variables.set(\"testCaseIndex\", index);",
-							"    pm.execution.setNextRequest(pm.info.requestName);",
-							"}"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "{{testToken}}",
-						"type": "text"
-					}
-				],
-				"url": {
-					"raw": "{{baseUrl}}/api/players/{{id}}",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"api",
-						"players",
-						"{{id}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GET stats",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Response keys are valid\", function () {",
-							"    Object.keys(pm.response.json()).forEach(key => {",
-							"        pm.expect(key.length).to.eql(2);",
-							"        pm.expect(key.toUpperCase()).to.eql(key);",
-							"    })",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}/api/stats",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"api",
-						"stats"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GET evaluate texas",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"const testCases = [",
-							"    {",
-							"        hand: \"AcAs\",",
-							"        board: \"AhKhQhJhTh\",",
-							"        expectedStatus: 200,",
-							"        expectedMessage: \"royal flush\"",
-							"    },",
-							"    {",
-							"        hand: \"KhQh\",",
-							"        board: \"3h5d7c9s6s\",",
-							"        expectedStatus: 200,",
-							"        expectedMessage: \"high card\"",
-							"    },",
-							"    {",
-							"        hand: \"3sQh\",",
-							"        board: \"3h5d7c9s6s\",",
-							"        expectedStatus: 200,",
-							"        expectedMessage: \"pair\"",
-							"    },",
-							"    {",
-							"        hand: \"3s5h\",",
-							"        board: \"3h5d7c9s6s\",",
-							"        expectedStatus: 200,",
-							"        expectedMessage: \"two pair\"",
-							"    },",
-							"    {",
-							"        hand: \"3s3d\",",
-							"        board: \"3h5d7c9s6s\",",
-							"        expectedStatus: 200,",
-							"        expectedMessage: \"three of a kind\"",
-							"    },",
-							"    {",
-							"        hand: \"3s4d\",",
-							"        board: \"Ah5d6c9s7s\",",
-							"        expectedStatus: 200,",
-							"        expectedMessage: \"straight\"",
-							"    },",
-							"    {",
-							"        hand: \"3h4h\",",
-							"        board: \"Ah5h6c9h6s\",",
-							"        expectedStatus: 200,",
-							"        expectedMessage: \"flush\"",
-							"    },",
-							"    {",
-							"        hand: \"3h3s\",",
-							"        board: \"3c4h4c9h6s\",",
-							"        expectedStatus: 200,",
-							"        expectedMessage: \"full house\"",
-							"    },",
-							"    {",
-							"        hand: \"3s3d\",",
-							"        board: \"3h3c6c9s6s\",",
-							"        expectedStatus: 200,",
-							"        expectedMessage: \"four of a kind\"",
-							"    },",
-							"    {",
-							"        hand: \"3s4s\",",
-							"        board: \"5s6s7s9sTs\",",
-							"        expectedStatus: 200,",
-							"        expectedMessage: \"straight flush\"",
-							"    },",
-							"    {",
-							"        hand: \"As4s\",",
-							"        board: \"KsQsJsTs5c\",",
-							"        expectedStatus: 200,",
-							"        expectedMessage: \"royal flush\"",
-							"    },",
-							"    {",
-							"        hand: \"AsAs\",",
-							"        board: \"KsQsJsTs5c\",",
-							"        expectedStatus: 500,",
-							"        expectedMessage: \"Invalid Texas input\"",
-							"    },",
-							"    {",
-							"        hand: \"ASD\",",
-							"        board: null,",
-							"        expectedStatus: 400,",
-							"        expectedMessage: \"Invalid Texas input\"",
-							"    },",
-							"    {",
-							"        hand: \"ASD\",",
-							"        board: \"KsQsJsTs5c\",",
-							"        expectedStatus: 400,",
-							"        expectedMessage: \"Invalid Texas input\"",
-							"    },",
-							"    {",
-							"        hand: \"KsQs\",",
-							"        board: \"ASDAA\",",
-							"        expectedStatus: 400,",
-							"        expectedMessage: \"Invalid Texas input\"",
-							"    },",
-							"    {",
-							"        hand: \"1234\",",
-							"        board: \"KsQsJsTs5c\",",
-							"        expectedStatus: 400,",
-							"        expectedMessage: \"Invalid Texas input\"",
-							"    },",
-							"    {",
-							"        hand: \"KsQs\",",
-							"        board: \"1234567890\",",
-							"        expectedStatus: 400,",
-							"        expectedMessage: \"Invalid Texas input\"",
-							"    },",
-							"    {",
-							"        hand: undefined,",
-							"        board: undefined,",
-							"        expectedStatus: 400,",
-							"        expectedMessage: \"Invalid Texas input\"",
-							"    },",
-							"];",
-							"",
-							"pm.variables.set(\"testCaseCount\", testCases.length);",
-							"",
-							"let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
-							"",
-							"if (index >= testCases.length) {",
-							"    pm.execution.setNextRequest(null);  // Stop running",
-							"} else {",
-							"    let currentCase = testCases[index];",
-							"",
-							"    Object.keys(currentCase).forEach(key => {",
-							"        pm.variables.set(key, currentCase[key]);",
-							"    });",
-							"}"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"//let testCases = JSON.parse(pm.environment.get(\"testCases\"));",
-							"let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
-							"const response = pm.response.json();",
-							"",
-							"pm.test(\"Status code is \" + pm.variables.get(\"expectedStatus\"), function () {",
-							"    pm.response.to.have.status(pm.variables.get(\"expectedStatus\"));",
-							"});",
-							"",
-							"const expectedMessage = pm.variables.get(\"expectedMessage\");",
-							"",
-							"if (expectedMessage !== undefined) {",
-							"    pm.test(\"Message is \" + expectedMessage, function () {",
-							"    pm.expect(pm.variables.get(\"expectedStatus\") === 200 ? response.handRank : response.error).to.eql(expectedMessage);",
-							"    });",
-							"}",
-							"",
-							"if (pm.variables.get(\"testCaseCount\") === ++index) {",
-							"    pm.variables.unset(\"testCaseIndex\");",
-							"    pm.variables.unset(\"testCaseCount\");",
-							"} else {",
-							"    pm.variables.set(\"testCaseIndex\", index);",
-							"    pm.execution.setNextRequest(pm.info.requestName);",
-							"}"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}/api/evaluate/texas?hand={{hand}}&board={{board}}",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"api",
-						"evaluate",
-						"texas"
-					],
-					"query": [
-						{
-							"key": "hand",
-							"value": "{{hand}}"
-						},
-						{
-							"key": "board",
-							"value": "{{board}}"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GET evaluate omaha",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"const testCases = [",
-							"    {",
-							"        \"hand\": \"QhJh9d2c\",",
-							"        \"board\": \"AhKhTh8h2d\",",
-							"        \"expectedStatus\": 200,",
-							"        \"expectedMessage\": \"royal flush\"",
-							"    },",
-							"    {",
-							"        \"hand\": \"9h8h7h6d\",",
-							"        \"board\": \"ThJhQh2c3d\",",
-							"        \"expectedStatus\": 200,",
-							"        \"expectedMessage\": \"straight flush\"",
-							"    },",
-							"    {",
-							"        \"hand\": \"7s7c2d3h\",",
-							"        \"board\": \"7d7hQdKs5s\",",
-							"        \"expectedStatus\": 200,",
-							"        \"expectedMessage\": \"four of a kind\"",
-							"    },",
-							"    {",
-							"        \"hand\": \"AdAh9s9c\",",
-							"        \"board\": \"Ac8dQs8s3c\",",
-							"        \"expectedStatus\": 200,",
-							"        \"expectedMessage\": \"full house\"",
-							"    },",
-							"    {",
-							"        \"hand\": \"5h6h9c2d\",",
-							"        \"board\": \"AhKhTh8h3h\",",
-							"        \"expectedStatus\": 200,",
-							"        \"expectedMessage\": \"flush\"",
-							"    },",
-							"    {",
-							"        \"hand\": \"9d8c7h2s\",",
-							"        \"board\": \"6s5cThJcQd\",",
-							"        \"expectedStatus\": 200,",
-							"        \"expectedMessage\": \"straight\"",
-							"    },",
-							"    {",
-							"        \"hand\": \"QcQs3d7s\",",
-							"        \"board\": \"Qh9h2c5d7d\",",
-							"        \"expectedStatus\": 200,",
-							"        \"expectedMessage\": \"three of a kind\"",
-							"    },",
-							"    {",
-							"        \"hand\": \"AsKd3c2h\",",
-							"        \"board\": \"AhKc4d7s8c\",",
-							"        \"expectedStatus\": 200,",
-							"        \"expectedMessage\": \"two pair\"",
-							"    },",
-							"    {",
-							"        \"hand\": \"6c7d3s2h\",",
-							"        \"board\": \"AhKhTdJd3c\",",
-							"        \"expectedStatus\": 200,",
-							"        \"expectedMessage\": \"pair\"",
-							"    },",
-							"    {",
-							"        \"hand\": \"2d5s9cJd\",",
-							"        \"board\": \"AhQc8h7s4s\",",
-							"        \"expectedStatus\": 200,",
-							"        \"expectedMessage\": \"high card\"",
-							"    },",
-							"    {",
-							"        \"hand\": \"2d3d\",",
-							"        \"board\": \"AhQc8h7s4s\",",
-							"        \"expectedStatus\": 400,",
-							"        \"expectedMessage\": \"Invalid Omaha input\"",
-							"    },",
-							"    {",
-							"        \"hand\": \"2d3d4d5d\",",
-							"        \"board\": \"2s3s\",",
-							"        \"expectedStatus\": 400,",
-							"        \"expectedMessage\": \"Invalid Omaha input\"",
-							"    },",
-							"    {",
-							"        \"hand\": null,",
-							"        \"board\": undefined,",
-							"        \"expectedStatus\": 400,",
-							"        \"expectedMessage\": \"Invalid Omaha input\"",
-							"    },",
-							"    {",
-							"        \"hand\": \"12345678\",",
-							"        \"board\": \"2d3d4d5d6d\",",
-							"        \"expectedStatus\": 400,",
-							"        \"expectedMessage\": \"Invalid Omaha input\"",
-							"    },",
-							"    {",
-							"        \"hand\": \"2d3d4d5d\",",
-							"        \"board\": \"1234567890\",",
-							"        \"expectedStatus\": 400,",
-							"        \"expectedMessage\": \"Invalid Omaha input\"",
-							"    },",
-							"    {",
-							"        \"hand\": \"2d2d2d2d\",",
-							"        \"board\": \"2d2d2d2d2d\",",
-							"        \"expectedStatus\": 500,",
-							"        \"expectedMessage\": \"Invalid Omaha input\"",
-							"    }",
-							"];",
-							"",
-							"pm.variables.set(\"testCaseCount\", testCases.length);",
-							"",
-							"let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
-							"",
-							"if (index >= testCases.length) {",
-							"    pm.execution.setNextRequest(null);  // Stop running",
-							"} else {",
-							"    let currentCase = testCases[index];",
-							"",
-							"    Object.keys(currentCase).forEach(key => {",
-							"        pm.variables.set(key, currentCase[key]);",
-							"    });",
-							"}"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"//let testCases = JSON.parse(pm.environment.get(\"testCases\"));",
-							"let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
-							"const response = pm.response.json();",
-							"",
-							"pm.test(\"Status code is \" + pm.variables.get(\"expectedStatus\"), function () {",
-							"    pm.response.to.have.status(pm.variables.get(\"expectedStatus\"));",
-							"});",
-							"",
-							"const expectedMessage = pm.variables.get(\"expectedMessage\");",
-							"",
-							"if (expectedMessage !== undefined) {",
-							"    pm.test(\"Message is \" + expectedMessage, function () {",
-							"    pm.expect(pm.variables.get(\"expectedStatus\") === 200 ? response.handRank : response.error).to.eql(expectedMessage);",
-							"    });",
-							"}",
-							"",
-							"if (pm.variables.get(\"testCaseCount\") === ++index) {",
-							"    pm.variables.unset(\"testCaseIndex\");",
-							"    pm.variables.unset(\"testCaseCount\");",
-							"} else {",
-							"    pm.variables.set(\"testCaseIndex\", index);",
-							"    pm.execution.setNextRequest(pm.info.requestName);",
-							"}"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}/api/evaluate/omaha?hand={{hand}}&board={{board}}",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"api",
-						"evaluate",
-						"omaha"
-					],
-					"query": [
-						{
-							"key": "hand",
-							"value": "{{hand}}"
-						},
-						{
-							"key": "board",
-							"value": "{{board}}"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GET coverage",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}/api/coverage",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"api",
-						"coverage"
-					]
-				}
-			},
-			"response": []
-		}
-	],
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"type": "text/javascript",
-				"packages": {},
-				"exec": [
-					""
-				]
-			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"type": "text/javascript",
-				"packages": {},
-				"exec": [
-					""
-				]
-			}
-		}
-	],
-	"variable": [
-		{
-			"key": "baseUrl",
-			"value": "http://localhost:8080",
-			"type": "string"
-		}
-	]
+  "info": {
+    "_postman_id": "1f0e17b6-7b61-4888-a137-13fb0df29b35",
+    "name": "_Poker API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "30174363"
+  },
+  "item": [
+    {
+      "name": "POST login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//let testCases = JSON.parse(pm.environment.get(\"testCases\"));",
+              "let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
+              "const response = pm.response.json();",
+              "",
+              "pm.test(\"Status code is \" + pm.variables.get(\"expectedStatus\"), function () {",
+              "    pm.response.to.have.status(pm.variables.get(\"expectedStatus\"));",
+              "});",
+              "",
+              "pm.test(\"Message is \" + pm.variables.get(\"expectedMessage\"), function () {",
+              "    pm.expect(pm.variables.get(\"expectedStatus\") === 200 ? response.message : response.error).to.eql(pm.variables.get(\"expectedMessage\"));",
+              "});",
+              "",
+              "pm.environment.set(\"token\", response.token);",
+              "",
+              "if (pm.variables.get(\"testCaseCount\") === ++index) {",
+              "    pm.variables.unset(\"testCaseIndex\");",
+              "    pm.variables.unset(\"testCaseCount\");",
+              "} else {",
+              "    pm.variables.set(\"testCaseIndex\", index);",
+              "    pm.execution.setNextRequest(pm.info.requestName);",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const testCases = [",
+              "    {",
+              "        username: null,",
+              "        password: undefined,",
+              "        expectedStatus: 400,",
+              "        expectedMessage: \"Username and password are required\",",
+              "    },",
+              "    {",
+              "        username: \"user10\",",
+              "        password: \"password\",",
+              "        expectedStatus: 401,",
+              "        expectedMessage: \"Unauthorized\",",
+              "    },",
+              "    {",
+              "        username: \"user1\",",
+              "        password: \"jondoe\",",
+              "        expectedStatus: 401,",
+              "        expectedMessage: \"Unauthorized\",",
+              "    },",
+              "    {",
+              "        username: \"user1\",",
+              "        password: \"123456\",",
+              "        expectedStatus: 200,",
+              "        expectedMessage: \"Login successful\",",
+              "    }",
+              "];",
+              "",
+              "pm.variables.set(\"testCaseCount\", testCases.length);",
+              "",
+              "let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
+              "",
+              "if (index >= testCases.length) {",
+              "    console.log(\"All test cases done.\");",
+              "    pm.execution.setNextRequest(null);  // Stop running",
+              "} else {",
+              "    let currentCase = testCases[index];",
+              "",
+              "    Object.keys(currentCase).forEach(key => {",
+              "        pm.variables.set(key, currentCase[key]);",
+              "    });",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"{{username}}\",\n    \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "login"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET players",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const testCases = [",
+              "    {",
+              "        limit: null,",
+              "        page: null,",
+              "        country: null,",
+              "        expectedStatus: 400,",
+              "        expectedMessage: undefined,",
+              "    },",
+              "    {",
+              "        limit: 5,",
+              "        page: 1,",
+              "        country: null,",
+              "        expectedStatus: 200,",
+              "        expectedMessage: undefined,",
+              "    },",
+              "    {",
+              "        limit: 5,",
+              "        page: 2,",
+              "        country: null,",
+              "        expectedStatus: 200,",
+              "        expectedMessage: undefined,",
+              "    },",
+              "    {",
+              "        limit: 0,",
+              "        page: -1,",
+              "        country: null,",
+              "        expectedStatus: 400,",
+              "        expectedMessage: undefined,",
+              "    },",
+              "    {",
+              "        limit: 5,",
+              "        page: 1,",
+              "        country: \"HU\",",
+              "        expectedStatus: 200,",
+              "        expectedMessage: undefined,",
+              "    },",
+              "    {",
+              "        limit: 5,",
+              "        page: 1,",
+              "        country: \"ASDASD\",",
+              "        expectedStatus: 404,",
+              "        expectedMessage: undefined,",
+              "    },",
+              "];",
+              "",
+              "pm.variables.set(\"testCaseCount\", testCases.length);",
+              "",
+              "let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
+              "",
+              "if (index >= testCases.length) {",
+              "    pm.execution.setNextRequest(null);  // Stop running",
+              "} else {",
+              "    let currentCase = testCases[index];",
+              "",
+              "    Object.keys(currentCase).forEach(key => {",
+              "        pm.variables.set(key, currentCase[key]);",
+              "    });",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//let testCases = JSON.parse(pm.environment.get(\"testCases\"));",
+              "let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
+              "const response = pm.response.json();",
+              "",
+              "pm.test(\"Status code is \" + pm.variables.get(\"expectedStatus\"), function () {",
+              "    pm.response.to.have.status(pm.variables.get(\"expectedStatus\"));",
+              "});",
+              "",
+              "const expectedMessage = pm.variables.get(\"expectedMessage\");",
+              "",
+              "if (expectedMessage !== undefined) {",
+              "    pm.test(\"Message is \" + expectedMessage, function () {",
+              "    pm.expect(pm.variables.get(\"expectedStatus\") === 200 ? response.message : response.error).to.eql(expectedMessage);",
+              "});",
+              "}",
+              "",
+              "if (pm.variables.get(\"testCaseCount\") === ++index) {",
+              "    pm.variables.unset(\"testCaseIndex\");",
+              "    pm.variables.unset(\"testCaseCount\");",
+              "} else {",
+              "    pm.variables.set(\"testCaseIndex\", index);",
+              "    pm.execution.setNextRequest(pm.info.requestName);",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/players?limit={{limit}}&page={{page}}&country={{country}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "players"],
+          "query": [
+            {
+              "key": "limit",
+              "value": "{{limit}}"
+            },
+            {
+              "key": "page",
+              "value": "{{page}}"
+            },
+            {
+              "key": "country",
+              "value": "{{country}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET player",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const testCases = [",
+              "    {",
+              "        id: 1,",
+              "        expectedStatus: 404,",
+              "        expectedMessage: \"Player not found\",",
+              "    },",
+              "    {",
+              "        id: \"df77015a-4527-4650-913e-2fd4729f033a\",",
+              "        expectedStatus: 200,",
+              "        expectedMessage: undefined,",
+              "    }",
+              "];",
+              "",
+              "pm.variables.set(\"testCaseCount\", testCases.length);",
+              "",
+              "let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
+              "",
+              "if (index >= testCases.length) {",
+              "    pm.execution.setNextRequest(null);  // Stop running",
+              "} else {",
+              "    let currentCase = testCases[index];",
+              "",
+              "    Object.keys(currentCase).forEach(key => {",
+              "        pm.variables.set(key, currentCase[key]);",
+              "    });",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//let testCases = JSON.parse(pm.environment.get(\"testCases\"));",
+              "let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
+              "const response = pm.response.json();",
+              "",
+              "pm.test(\"Status code is \" + pm.variables.get(\"expectedStatus\"), function () {",
+              "    pm.response.to.have.status(pm.variables.get(\"expectedStatus\"));",
+              "});",
+              "",
+              "const expectedMessage = pm.variables.get(\"expectedMessage\");",
+              "",
+              "if (expectedMessage !== undefined) {",
+              "    pm.test(\"Message is \" + expectedMessage, function () {",
+              "    pm.expect(pm.variables.get(\"expectedStatus\") === 200 ? response.message : response.error).to.eql(expectedMessage);",
+              "});",
+              "}",
+              "",
+              "if (pm.variables.get(\"testCaseCount\") === ++index) {",
+              "    pm.variables.unset(\"testCaseIndex\");",
+              "    pm.variables.unset(\"testCaseCount\");",
+              "} else {",
+              "    pm.variables.set(\"testCaseIndex\", index);",
+              "    pm.execution.setNextRequest(pm.info.requestName);",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/players/{{id}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "players", "{{id}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "POST player",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const testCases = [",
+              "    {",
+              "        username: \"test\",",
+              "        email: \"johndoe@gmail.com\",",
+              "        birthDate: \"2000-01-01\",",
+              "        balance: 5000,",
+              "        country: \"HU\",",
+              "        tokenPrefix: \"What \",",
+              "        expectedStatus: 401,",
+              "        expectedMessage: undefined",
+              "    },",
+              "    {",
+              "        username: \"test\",",
+              "        email: \"johndoe@gmail.com\",",
+              "        birthDate: \"2000-01-01\",",
+              "        balance: 5000,",
+              "        country: \"HU\",",
+              "        tokenPrefix: \"Bearer {}\",",
+              "        expectedStatus: 401,",
+              "        expectedMessage: undefined",
+              "    },",
+              "    {",
+              "        username: \"\",",
+              "        email: \"johndoe@gmail.com\",",
+              "        birthDate: \"2000-01-01\",",
+              "        balance: 5000,",
+              "        country: \"HU\",",
+              "        tokenPrefix: \"Bearer \",",
+              "        expectedStatus: 400,",
+              "        expectedMessage: undefined",
+              "    },",
+              "    {",
+              "        username: \"test\",",
+              "        email: \"\",",
+              "        birthDate: \"2000-01-01\",",
+              "        balance: 5000,",
+              "        country: \"HU\",",
+              "        tokenPrefix: \"Bearer \",",
+              "        expectedStatus: 400,",
+              "        expectedMessage: undefined",
+              "    },",
+              "    {",
+              "        username: \"test\",",
+              "        email: \"johndoe@gmail.com\",",
+              "        birthDate: \"\",",
+              "        balance: 5000,",
+              "        country: \"HU\",",
+              "        tokenPrefix: \"Bearer \",",
+              "        expectedStatus: 400,",
+              "        expectedMessage: undefined",
+              "    },",
+              "    {",
+              "        username: \"test\",",
+              "        email: \"johndoe@gmail.com\",",
+              "        birthDate: \"2024-01-01\",",
+              "        balance: 5000,",
+              "        country: \"HU\",",
+              "        tokenPrefix: \"Bearer \",",
+              "        expectedStatus: 400,",
+              "        expectedMessage: undefined",
+              "    },",
+              "    {",
+              "        username: \"test\",",
+              "        email: \"johndoe@gmail.com\",",
+              "        birthDate: \"2024-01-01\",",
+              "        balance: 5000,",
+              "        country: \"HU\",",
+              "        tokenPrefix: \"Bearer \",",
+              "        expectedStatus: 400,",
+              "        expectedMessage: undefined",
+              "    },",
+              "    {",
+              "        username: \"test\",",
+              "        email: \"johndoe@gmail.com\",",
+              "        birthDate: \"2000-01-01\",",
+              "        balance: 0,",
+              "        country: \"HU\",",
+              "        tokenPrefix: \"Bearer \",",
+              "        expectedStatus: 400,",
+              "        expectedMessage: undefined",
+              "    },",
+              "    {",
+              "        username: \"test\",",
+              "        email: \"johndoe@gmail.com\",",
+              "        birthDate: \"2000-01-01\",",
+              "        balance: -50,",
+              "        country: \"HU\",",
+              "        tokenPrefix: \"Bearer \",",
+              "        expectedStatus: 400,",
+              "        expectedMessage: undefined",
+              "    },",
+              "    {",
+              "        username: \"test\",",
+              "        email: \"johndoe@gmail.com\",",
+              "        birthDate: \"2000-01-01\",",
+              "        balance: 5000,",
+              "        country: \"\",",
+              "        tokenPrefix: \"Bearer \",",
+              "        expectedStatus: 400,",
+              "        expectedMessage: undefined",
+              "    },",
+              "    {",
+              "        username: \"test\",",
+              "        email: \"johndoe@gmail.com\",",
+              "        birthDate: \"2000-01-01\",",
+              "        balance: 5000,",
+              "        country: \"ASDASD\",",
+              "        tokenPrefix: \"Bearer \",",
+              "        expectedStatus: 400,",
+              "        expectedMessage: undefined",
+              "    },",
+              "    {",
+              "        username: \"test\",",
+              "        email: \"johndoe@gmail.com\",",
+              "        birthDate: \"2000-01-01\",",
+              "        balance: 5000,",
+              "        country: \"HU\",",
+              "        tokenPrefix: \"Bearer \",",
+              "        expectedStatus: 201,",
+              "        expectedMessage: undefined",
+              "    }",
+              "];",
+              "",
+              "pm.variables.set(\"testCaseCount\", testCases.length);",
+              "",
+              "let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
+              "",
+              "if (index >= testCases.length) {",
+              "    pm.execution.setNextRequest(null);  // Stop running",
+              "} else {",
+              "    let currentCase = testCases[index];",
+              "",
+              "    currentCase.testToken = currentCase.tokenPrefix + pm.environment.get(\"token\");",
+              "",
+              "    Object.keys(currentCase).forEach(key => {",
+              "        pm.variables.set(key, currentCase[key]);",
+              "    });",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//let testCases = JSON.parse(pm.environment.get(\"testCases\"));",
+              "let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
+              "const response = pm.response.json();",
+              "",
+              "pm.test(\"Status code is \" + pm.variables.get(\"expectedStatus\"), function () {",
+              "    pm.response.to.have.status(pm.variables.get(\"expectedStatus\"));",
+              "});",
+              "",
+              "const expectedMessage = pm.variables.get(\"expectedMessage\");",
+              "",
+              "if (expectedMessage !== undefined) {",
+              "    pm.test(\"Message is \" + expectedMessage, function () {",
+              "    pm.expect(pm.variables.get(\"expectedStatus\") === 200 ? response.message : response.error).to.eql(expectedMessage);",
+              "    });",
+              "}",
+              "",
+              "pm.environment.set(\"playerId\", response.id);",
+              "",
+              "if (pm.variables.get(\"testCaseCount\") === ++index) {",
+              "    pm.variables.unset(\"testCaseIndex\");",
+              "    pm.variables.unset(\"testCaseCount\");",
+              "} else {",
+              "    pm.variables.set(\"testCaseIndex\", index);",
+              "    pm.execution.setNextRequest(pm.info.requestName);",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{testToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"email\": \"{{email}}\",\n  \"birthDate\": \"{{birthDate}}\",\n  \"balance\": {{balance}},\n  \"country\": \"{{country}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/players",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "players"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "DELETE player",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const testCases = [",
+              "    {",
+              "        id: \"12345678-05b7-4d76-969c-c7336e247ca6\",",
+              "        tokenPrefix: \"What X\",",
+              "        expectedStatus: 401,",
+              "        expectedMessage: undefined",
+              "    },",
+              "    {",
+              "        id: \"12345678-05b7-4d76-969c-c7336e247ca6\",",
+              "        tokenPrefix: \"Bearer X\",",
+              "        expectedStatus: 401,",
+              "        expectedMessage: undefined",
+              "    },",
+              "    {",
+              "        tokenPrefix: \"Bearer \",",
+              "        expectedStatus: 204,",
+              "        expectedMessage: undefined",
+              "    },",
+              "    {",
+              "        id: \"12345678-05b7-4d76-969c-c7336e247ca6\",",
+              "        tokenPrefix: \"Bearer \",",
+              "        expectedStatus: 404,",
+              "        expectedMessage: undefined",
+              "    },",
+              "];",
+              "",
+              "pm.variables.set(\"testCaseCount\", testCases.length);",
+              "",
+              "let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
+              "",
+              "if (index >= testCases.length) {",
+              "    pm.execution.setNextRequest(null);  // Stop running",
+              "} else {",
+              "    let currentCase = testCases[index];",
+              "",
+              "    if (currentCase.id === undefined) {",
+              "        currentCase.id = pm.environment.get(\"playerId\");",
+              "    }",
+              "",
+              "    currentCase.testToken = currentCase.tokenPrefix + pm.environment.get(\"token\");",
+              "",
+              "    Object.keys(currentCase).forEach(key => {",
+              "        pm.variables.set(key, currentCase[key]);",
+              "    });",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//let testCases = JSON.parse(pm.environment.get(\"testCases\"));",
+              "let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
+              "const response = pm.response.code === 204 ? null : pm.response.json();",
+              "",
+              "pm.test(\"Status code is \" + pm.variables.get(\"expectedStatus\"), function () {",
+              "    pm.response.to.have.status(pm.variables.get(\"expectedStatus\"));",
+              "});",
+              "",
+              "const expectedMessage = pm.variables.get(\"expectedMessage\");",
+              "",
+              "if (expectedMessage !== undefined) {",
+              "    pm.test(\"Message is \" + expectedMessage, function () {",
+              "    pm.expect(pm.variables.get(\"expectedStatus\") === 204 ? response.message : response.error).to.eql(expectedMessage);",
+              "    });",
+              "}",
+              "",
+              "if (pm.variables.get(\"testCaseCount\") === ++index) {",
+              "    pm.variables.unset(\"testCaseIndex\");",
+              "    pm.variables.unset(\"testCaseCount\");",
+              "} else {",
+              "    pm.variables.set(\"testCaseIndex\", index);",
+              "    pm.execution.setNextRequest(pm.info.requestName);",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{testToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/players/{{id}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "players", "{{id}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET stats",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response keys are valid\", function () {",
+              "    Object.keys(pm.response.json()).forEach(key => {",
+              "        pm.expect(key.length).to.eql(2);",
+              "        pm.expect(key.toUpperCase()).to.eql(key);",
+              "    })",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/stats",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "stats"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET evaluate texas",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const testCases = [",
+              "    {",
+              "        hand: \"AcAs\",",
+              "        board: \"AhKhQhJhTh\",",
+              "        expectedStatus: 200,",
+              "        expectedMessage: \"royal flush\"",
+              "    },",
+              "    {",
+              "        hand: \"KhQh\",",
+              "        board: \"3h5d7c9s6s\",",
+              "        expectedStatus: 200,",
+              "        expectedMessage: \"high card\"",
+              "    },",
+              "    {",
+              "        hand: \"3sQh\",",
+              "        board: \"3h5d7c9s6s\",",
+              "        expectedStatus: 200,",
+              "        expectedMessage: \"pair\"",
+              "    },",
+              "    {",
+              "        hand: \"3s5h\",",
+              "        board: \"3h5d7c9s6s\",",
+              "        expectedStatus: 200,",
+              "        expectedMessage: \"two pair\"",
+              "    },",
+              "    {",
+              "        hand: \"3s3d\",",
+              "        board: \"3h5d7c9s6s\",",
+              "        expectedStatus: 200,",
+              "        expectedMessage: \"three of a kind\"",
+              "    },",
+              "    {",
+              "        hand: \"3s4d\",",
+              "        board: \"Ah5d6c9s7s\",",
+              "        expectedStatus: 200,",
+              "        expectedMessage: \"straight\"",
+              "    },",
+              "    {",
+              "        hand: \"3h4h\",",
+              "        board: \"Ah5h6c9h6s\",",
+              "        expectedStatus: 200,",
+              "        expectedMessage: \"flush\"",
+              "    },",
+              "    {",
+              "        hand: \"3h3s\",",
+              "        board: \"3c4h4c9h6s\",",
+              "        expectedStatus: 200,",
+              "        expectedMessage: \"full house\"",
+              "    },",
+              "    {",
+              "        hand: \"3s3d\",",
+              "        board: \"3h3c6c9s6s\",",
+              "        expectedStatus: 200,",
+              "        expectedMessage: \"four of a kind\"",
+              "    },",
+              "    {",
+              "        hand: \"3s4s\",",
+              "        board: \"5s6s7s9sTs\",",
+              "        expectedStatus: 200,",
+              "        expectedMessage: \"straight flush\"",
+              "    },",
+              "    {",
+              "        hand: \"As4s\",",
+              "        board: \"KsQsJsTs5c\",",
+              "        expectedStatus: 200,",
+              "        expectedMessage: \"royal flush\"",
+              "    },",
+              "    {",
+              "        hand: \"AsAs\",",
+              "        board: \"KsQsJsTs5c\",",
+              "        expectedStatus: 500,",
+              "        expectedMessage: \"Invalid Texas input\"",
+              "    },",
+              "    {",
+              "        hand: \"ASD\",",
+              "        board: null,",
+              "        expectedStatus: 400,",
+              "        expectedMessage: \"Invalid Texas input\"",
+              "    },",
+              "    {",
+              "        hand: \"ASD\",",
+              "        board: \"KsQsJsTs5c\",",
+              "        expectedStatus: 400,",
+              "        expectedMessage: \"Invalid Texas input\"",
+              "    },",
+              "    {",
+              "        hand: \"KsQs\",",
+              "        board: \"ASDAA\",",
+              "        expectedStatus: 400,",
+              "        expectedMessage: \"Invalid Texas input\"",
+              "    },",
+              "    {",
+              "        hand: \"1234\",",
+              "        board: \"KsQsJsTs5c\",",
+              "        expectedStatus: 400,",
+              "        expectedMessage: \"Invalid Texas input\"",
+              "    },",
+              "    {",
+              "        hand: \"KsQs\",",
+              "        board: \"1234567890\",",
+              "        expectedStatus: 400,",
+              "        expectedMessage: \"Invalid Texas input\"",
+              "    },",
+              "    {",
+              "        hand: undefined,",
+              "        board: undefined,",
+              "        expectedStatus: 400,",
+              "        expectedMessage: \"Invalid Texas input\"",
+              "    },",
+              "];",
+              "",
+              "pm.variables.set(\"testCaseCount\", testCases.length);",
+              "",
+              "let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
+              "",
+              "if (index >= testCases.length) {",
+              "    pm.execution.setNextRequest(null);  // Stop running",
+              "} else {",
+              "    let currentCase = testCases[index];",
+              "",
+              "    Object.keys(currentCase).forEach(key => {",
+              "        pm.variables.set(key, currentCase[key]);",
+              "    });",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//let testCases = JSON.parse(pm.environment.get(\"testCases\"));",
+              "let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
+              "const response = pm.response.json();",
+              "",
+              "pm.test(\"Status code is \" + pm.variables.get(\"expectedStatus\"), function () {",
+              "    pm.response.to.have.status(pm.variables.get(\"expectedStatus\"));",
+              "});",
+              "",
+              "const expectedMessage = pm.variables.get(\"expectedMessage\");",
+              "",
+              "if (expectedMessage !== undefined) {",
+              "    pm.test(\"Message is \" + expectedMessage, function () {",
+              "    pm.expect(pm.variables.get(\"expectedStatus\") === 200 ? response.handRank : response.error).to.eql(expectedMessage);",
+              "    });",
+              "}",
+              "",
+              "if (pm.variables.get(\"testCaseCount\") === ++index) {",
+              "    pm.variables.unset(\"testCaseIndex\");",
+              "    pm.variables.unset(\"testCaseCount\");",
+              "} else {",
+              "    pm.variables.set(\"testCaseIndex\", index);",
+              "    pm.execution.setNextRequest(pm.info.requestName);",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/evaluate/texas?hand={{hand}}&board={{board}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "evaluate", "texas"],
+          "query": [
+            {
+              "key": "hand",
+              "value": "{{hand}}"
+            },
+            {
+              "key": "board",
+              "value": "{{board}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET evaluate omaha",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const testCases = [",
+              "    {",
+              "        \"hand\": \"QhJh9d2c\",",
+              "        \"board\": \"AhKhTh8h2d\",",
+              "        \"expectedStatus\": 200,",
+              "        \"expectedMessage\": \"royal flush\"",
+              "    },",
+              "    {",
+              "        \"hand\": \"9h8h7h6d\",",
+              "        \"board\": \"ThJhQh2c3d\",",
+              "        \"expectedStatus\": 200,",
+              "        \"expectedMessage\": \"straight flush\"",
+              "    },",
+              "    {",
+              "        \"hand\": \"7s7c2d3h\",",
+              "        \"board\": \"7d7hQdKs5s\",",
+              "        \"expectedStatus\": 200,",
+              "        \"expectedMessage\": \"four of a kind\"",
+              "    },",
+              "    {",
+              "        \"hand\": \"AdAh9s9c\",",
+              "        \"board\": \"Ac8dQs8s3c\",",
+              "        \"expectedStatus\": 200,",
+              "        \"expectedMessage\": \"full house\"",
+              "    },",
+              "    {",
+              "        \"hand\": \"5h6h9c2d\",",
+              "        \"board\": \"AhKhTh8h3h\",",
+              "        \"expectedStatus\": 200,",
+              "        \"expectedMessage\": \"flush\"",
+              "    },",
+              "    {",
+              "        \"hand\": \"9d8c7h2s\",",
+              "        \"board\": \"6s5cThJcQd\",",
+              "        \"expectedStatus\": 200,",
+              "        \"expectedMessage\": \"straight\"",
+              "    },",
+              "    {",
+              "        \"hand\": \"QcQs3d7s\",",
+              "        \"board\": \"Qh9h2c5d7d\",",
+              "        \"expectedStatus\": 200,",
+              "        \"expectedMessage\": \"three of a kind\"",
+              "    },",
+              "    {",
+              "        \"hand\": \"AsKd3c2h\",",
+              "        \"board\": \"AhKc4d7s8c\",",
+              "        \"expectedStatus\": 200,",
+              "        \"expectedMessage\": \"two pair\"",
+              "    },",
+              "    {",
+              "        \"hand\": \"6c7d3s2h\",",
+              "        \"board\": \"AhKhTdJd3c\",",
+              "        \"expectedStatus\": 200,",
+              "        \"expectedMessage\": \"pair\"",
+              "    },",
+              "    {",
+              "        \"hand\": \"2d5s9cJd\",",
+              "        \"board\": \"AhQc8h7s4s\",",
+              "        \"expectedStatus\": 200,",
+              "        \"expectedMessage\": \"high card\"",
+              "    },",
+              "    {",
+              "        \"hand\": \"2d3d\",",
+              "        \"board\": \"AhQc8h7s4s\",",
+              "        \"expectedStatus\": 400,",
+              "        \"expectedMessage\": \"Invalid Omaha input\"",
+              "    },",
+              "    {",
+              "        \"hand\": \"2d3d4d5d\",",
+              "        \"board\": \"2s3s\",",
+              "        \"expectedStatus\": 400,",
+              "        \"expectedMessage\": \"Invalid Omaha input\"",
+              "    },",
+              "    {",
+              "        \"hand\": null,",
+              "        \"board\": undefined,",
+              "        \"expectedStatus\": 400,",
+              "        \"expectedMessage\": \"Invalid Omaha input\"",
+              "    },",
+              "    {",
+              "        \"hand\": \"12345678\",",
+              "        \"board\": \"2d3d4d5d6d\",",
+              "        \"expectedStatus\": 400,",
+              "        \"expectedMessage\": \"Invalid Omaha input\"",
+              "    },",
+              "    {",
+              "        \"hand\": \"2d3d4d5d\",",
+              "        \"board\": \"1234567890\",",
+              "        \"expectedStatus\": 400,",
+              "        \"expectedMessage\": \"Invalid Omaha input\"",
+              "    },",
+              "    {",
+              "        \"hand\": \"2d2d2d2d\",",
+              "        \"board\": \"2d2d2d2d2d\",",
+              "        \"expectedStatus\": 500,",
+              "        \"expectedMessage\": \"Invalid Omaha input\"",
+              "    }",
+              "];",
+              "",
+              "pm.variables.set(\"testCaseCount\", testCases.length);",
+              "",
+              "let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
+              "",
+              "if (index >= testCases.length) {",
+              "    pm.execution.setNextRequest(null);  // Stop running",
+              "} else {",
+              "    let currentCase = testCases[index];",
+              "",
+              "    Object.keys(currentCase).forEach(key => {",
+              "        pm.variables.set(key, currentCase[key]);",
+              "    });",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//let testCases = JSON.parse(pm.environment.get(\"testCases\"));",
+              "let index = parseInt(pm.variables.get(\"testCaseIndex\")) || 0;",
+              "const response = pm.response.json();",
+              "",
+              "pm.test(\"Status code is \" + pm.variables.get(\"expectedStatus\"), function () {",
+              "    pm.response.to.have.status(pm.variables.get(\"expectedStatus\"));",
+              "});",
+              "",
+              "const expectedMessage = pm.variables.get(\"expectedMessage\");",
+              "",
+              "if (expectedMessage !== undefined) {",
+              "    pm.test(\"Message is \" + expectedMessage, function () {",
+              "    pm.expect(pm.variables.get(\"expectedStatus\") === 200 ? response.handRank : response.error).to.eql(expectedMessage);",
+              "    });",
+              "}",
+              "",
+              "if (pm.variables.get(\"testCaseCount\") === ++index) {",
+              "    pm.variables.unset(\"testCaseIndex\");",
+              "    pm.variables.unset(\"testCaseCount\");",
+              "} else {",
+              "    pm.variables.set(\"testCaseIndex\", index);",
+              "    pm.execution.setNextRequest(pm.info.requestName);",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/evaluate/omaha?hand={{hand}}&board={{board}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "evaluate", "omaha"],
+          "query": [
+            {
+              "key": "hand",
+              "value": "{{hand}}"
+            },
+            {
+              "key": "board",
+              "value": "{{board}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET coverage",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/coverage",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "coverage"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:2345",
+      "type": "string"
+    }
+  ]
 }
