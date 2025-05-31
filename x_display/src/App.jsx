@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { twMerge } from "tailwind-merge";
+import "./App.css";
 import "/node_modules/flag-icons/css/flag-icons.min.css";
 
 const competitors = [
-  { name: "John Doe", country: "US", host: "http://localhost:2345/api/" },
-  { name: "Jin Jang", country: "CN", host: "http://localhost:2346/api/" },
-  { name: "Gipsz Jakab", country: "HU", host: "http://localhost:8080/api/" },
+  { name: "Competitor A", country: "HU", host: "http://localhost:2345/api/" },
+  { name: "Competitor B", country: "CN", host: "http://localhost:2346/api/" },
 ];
 
 function App() {
@@ -36,33 +35,22 @@ function App() {
 
   return (
     <>
-      <div className="w-full h-screen bg-yellow flex flex-col gap-1 p-4">
+      <table className="w-full h-full">
         {competitors.map((competitor) => (
-          <div
+          <tr
             key={competitor.name}
-            className="flex justify-between gap-1 w-full h-full items-center"
+            className="flex gap-1 justify-between w-full"
           >
-            <div className="flex gap-2 flex-col items-center w-40">
-              <span
-                className={`fi fi-${competitor.country.toLowerCase()} scale-300`}
-              />
-              <span className="p-4 text-xl font-bold text-center">
-                {competitor.name}
-              </span>
-            </div>
+            <th className="flex gap-2 flex-nowrap">
+              <span className={`fi fi-${competitor.country.toLowerCase()}`} />
+              <span>{competitor.name}</span>
+            </th>
             {coverage[competitor.name]?.testCases.total.map((testCase) => (
-              <div
-                className={twMerge(
-                  "flex gap-1 justify-between grow h-full",
-                  coverage[competitor.name]?.covered.includes(testCase)
-                    ? "bg-green-400"
-                    : "bg-gray-200"
-                )}
-              ></div>
+              <td className="flex gap-1 justify-between">.</td>
             ))}
-          </div>
+          </tr>
         ))}
-      </div>
+      </table>
     </>
   );
 }

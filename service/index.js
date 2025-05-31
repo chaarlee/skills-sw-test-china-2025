@@ -268,7 +268,7 @@ app.get("/api/players", (req, res) => {
   if (country) {
     if (!/^[A-Z]{2}$/.test(country)) {
       coverage.addCoverage("players.get.invalid-country-code");
-      return res.status(400).send("Invalid country code");
+      return res.status(400).send({ error: "Invalid country code" });
     }
     coverage.addCoverage("players.get.by-country");
     players = players.filter(
@@ -383,6 +383,7 @@ app.post("/api/players", (req, res) => {
   }
 
   db.players.push(np);
+  // @TODO: add X-Total-Count header
   res.status(201).json(np);
 });
 
