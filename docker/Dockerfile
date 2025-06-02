@@ -8,4 +8,4 @@ WORKDIR /opt
 
 RUN chmod 777 . && npm install
 
-CMD ["npm", "run", "start"]
+CMD ["node", "index.js"]

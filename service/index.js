@@ -186,7 +186,6 @@ const evalOmaha = (hand, board) => {
       [2, 3, 4],
     ];
 
-    //const evalAllCards = PokerEvaluator.evalHand([...hand, ...board]);
     const evalHands = [];
     for (const handCombo of handCombinations) {
       for (const boardCombo of boardCombinations) {
@@ -208,10 +207,6 @@ const evalOmaha = (hand, board) => {
     if (evalHand.handType === 9 && evalHand.handRank === 10) {
       evalHand.handName = "royal flush";
     }
-
-    // if (evalAllCards.value > evalHand.value) {
-    //   coverage.addCoverage("evaluate.omaha.higher-board");
-    // }
 
     if (!evalHand.handName) {
       evalHand.handName = "invalid hand";

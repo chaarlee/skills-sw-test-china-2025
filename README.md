@@ -137,9 +137,6 @@ These errors occur when calling a protected endpoint without a valid token.
 - `page=1`
 - `limit=10`
 
-**Response Headers:**
-- `X-Total-Count`: Total number of players matching the query
-
 **Response (200):**
 ```json
 [
