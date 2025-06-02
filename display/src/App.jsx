@@ -32,19 +32,20 @@ function App() {
 
   return (
     <>
-      <div className="w-full h-screen bg-gray-100 flex flex-col gap-4 p-4">
+      <div className="w-full h-screen bg-gray-100 flex flex-col gap-2 p-2">
         {competitors.map((competitor) => (
           <div
             key={competitor.name}
-            className="flex justify-between gap-0.5 w-full h-full items-center border-2 border-gray-400 p-4 rounded-lg shadow-lg bg-white"
+            className="flex justify-between gap-0.5 w-full h-full items-center border-2 border-gray-400 p-2 rounded-lg shadow-lg bg-gray-100"
           >
-            <div className="flex gap-2 flex-col items-center w-40 h-full justify-center">
-              <div className="h-12 flex items-center">
+            <div className="flex gap-2 flex-col items-center w-48 h-full justify-center">
+              <div className="h-10 flex items-center">
                 <span
-                  className={`fi fi-${competitor.country.toLowerCase()} scale-300`}
+                  className={`fi fi-${competitor.iso.toLowerCase()} scale-200`}
                 />
               </div>
-              <span className="p-2 text-xl font-bold text-center">
+              <span className="text-xs uppercase">{competitor.country}</span>
+              <span className="text-lg font-bold text-center uppercase">
                 {competitor.name}
               </span>
             </div>
@@ -58,7 +59,7 @@ function App() {
                   "animate duration-2000",
                   coverage[competitor.name]?.covered.includes(testCase)
                     ? "bg-green-400"
-                    : "bg-gray-200"
+                    : "bg-gray-300"
                 )}
               ></div>
             ))}
