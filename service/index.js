@@ -317,12 +317,6 @@ app.get("/api/players", (req, res) => {
   } else {
     coverage.addCoverage("players.get.without-filter");
   }
-  if (isNaN(limit) || isNaN(page)) {
-    coverage.addCoverage("players.get.invalid-limit-or-page");
-    return res
-      .status(_n(400))
-      .send({ error: _s("Invalid limit or page number") });
-  }
   if (limit < 1 || page < 1) {
     coverage.addCoverage("players.get.negative-limit-or-page");
     return res
@@ -343,17 +337,6 @@ app.get("/api/players", (req, res) => {
   //     `Fetching players: limit=${limit}, page=${page}, start=${start}, end=${end}`,
   //     players.length
   //   );
-
-  if (start >= players.length) {
-    coverage.addCoverage("players.get.no-players-for-page");
-    return res
-      .status(_n(404))
-      .send({ error: _s("No players found for this page") });
-  }
-  if (page > Math.ceil(players.length / limit)) {
-    coverage.addCoverage("players.get.no-more-players");
-    return res.status(_n(404)).send({ error: _s("No more players available") });
-  }
 
   const ret = players.slice(start, end);
   if (ret.length === 0) {
